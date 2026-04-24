@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Companion Overlay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            keyframes: {
+              cmpIdle: {
+                '0%, 100%': { transform: 'translateY(0) scale(1)' },
+                '50%': { transform: 'translateY(-4px) scale(1.02)' },
+              },
+              cmpFloat: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-14px)' },
+              },
+              cmpBounce: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '40%': { transform: 'translateY(-18px)' },
+                '55%': { transform: 'translateY(0)' },
+              },
+              cmpShake: {
+                '0%, 100%': { transform: 'rotate(0deg)' },
+                '25%': { transform: 'rotate(-4deg)' },
+                '75%': { transform: 'rotate(4deg)' },
+              },
+              pushInLeft: { '0%': { transform: 'translateX(-120%)' }, '100%': { transform: 'translateX(0)' } },
+              pushInRight: { '0%': { transform: 'translateX(120%)' }, '100%': { transform: 'translateX(0)' } },
+              pushInTop: { '0%': { transform: 'translateY(-120%)' }, '100%': { transform: 'translateY(0)' } },
+              pushInBottom: { '0%': { transform: 'translateY(120%)' }, '100%': { transform: 'translateY(0)' } },
+              pushOutLeft: { '0%': { transform: 'translateX(0)' }, '100%': { transform: 'translateX(-120%)' } },
+              pushOutRight: { '0%': { transform: 'translateX(0)' }, '100%': { transform: 'translateX(120%)' } },
+              pushOutTop: { '0%': { transform: 'translateY(0)' }, '100%': { transform: 'translateY(-120%)' } },
+              pushOutBottom: { '0%': { transform: 'translateY(0)' }, '100%': { transform: 'translateY(120%)' } },
+              nonspeakGrunt: {
+                '0%': { transform: 'scale(1)' },
+                '35%': { transform: 'scale(1.12)' },
+                '70%': { transform: 'scale(0.96)' },
+                '100%': { transform: 'scale(1)' },
+              },
+              nonspeakBob: {
+                '0%': { transform: 'translateY(0)' },
+                '40%': { transform: 'translateY(10px)' },
+                '100%': { transform: 'translateY(0)' },
+              },
+              nonspeakSquash: {
+                '0%': { transform: 'scaleY(1)' },
+                '30%': { transform: 'scaleY(0.82) scaleX(1.06)' },
+                '65%': { transform: 'scaleY(1.06) scaleX(0.96)' },
+                '100%': { transform: 'scaleY(1) scaleX(1)' },
+              },
+              speakShake: {
+                '0%, 100%': { transform: 'rotate(-3deg)' },
+                '50%': { transform: 'rotate(3deg)' },
+              },
+              speakWobble: {
+                '0%, 100%': { transform: 'rotate(-2deg) translateX(-2px)' },
+                '25%': { transform: 'rotate(2deg) translateX(2px)' },
+                '50%': { transform: 'rotate(-1deg) translateX(-1px)' },
+                '75%': { transform: 'rotate(1deg) translateX(1px)' },
+              },
+              speakVibrate: {
+                '0%, 100%': { transform: 'translate(0, 0)' },
+                '25%': { transform: 'translate(1px, -1px)' },
+                '50%': { transform: 'translate(-1px, 1px)' },
+                '75%': { transform: 'translate(1px, 1px)' },
+              },
+            },
+            animation: {
+              'cmp-idle': 'cmpIdle var(--anim-duration, 3s) ease-in-out infinite',
+              'cmp-float': 'cmpFloat var(--anim-duration, 3s) ease-in-out infinite',
+              'cmp-bounce': 'cmpBounce calc(var(--anim-duration, 3s) * 0.85) ease-in-out infinite',
+              'cmp-shake': 'cmpShake calc(var(--anim-duration, 3s) * 0.5) ease-in-out infinite',
+              'push-in-left': 'pushInLeft var(--trigger-duration, 0.45s) cubic-bezier(0.22, 1, 0.36, 1) both',
+              'push-in-right': 'pushInRight var(--trigger-duration, 0.45s) cubic-bezier(0.22, 1, 0.36, 1) both',
+              'push-in-top': 'pushInTop var(--trigger-duration, 0.45s) cubic-bezier(0.22, 1, 0.36, 1) both',
+              'push-in-bottom': 'pushInBottom var(--trigger-duration, 0.45s) cubic-bezier(0.22, 1, 0.36, 1) both',
+              'push-out-left': 'pushOutLeft var(--trigger-duration, 0.45s) cubic-bezier(0.55, 0, 0.85, 0.45) forwards',
+              'push-out-right': 'pushOutRight var(--trigger-duration, 0.45s) cubic-bezier(0.55, 0, 0.85, 0.45) forwards',
+              'push-out-top': 'pushOutTop var(--trigger-duration, 0.45s) cubic-bezier(0.55, 0, 0.85, 0.45) forwards',
+              'push-out-bottom': 'pushOutBottom var(--trigger-duration, 0.45s) cubic-bezier(0.55, 0, 0.85, 0.45) forwards',
+              'nonspeak-grunt': 'nonspeakGrunt 0.38s cubic-bezier(0.34, 1.2, 0.64, 1) both',
+              'nonspeak-bob': 'nonspeakBob 0.36s ease-out both',
+              'nonspeak-squash': 'nonspeakSquash 0.4s ease-out both',
+              'speak-shake': 'speakShake 0.12s linear infinite',
+              'speak-wobble': 'speakWobble 0.35s ease-in-out infinite',
+              'speak-vibrate': 'speakVibrate 0.06s linear infinite',
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .companion-visual.cmp-idle-offstage {
+        visibility: hidden;
+        opacity: 0;
+        transition: none;
+      }
+      .field-invalid {
+        border-color: rgb(239 68 68) !important;
+        box-shadow: 0 0 0 1px rgb(239 68 68 / 0.35);
+      }
+      /* OBS / play URL: never show config UI; full frame is transparent. */
+      html.play-mode,
+      body.play-mode {
+        margin: 0;
+        min-height: 100%;
+        min-height: 100dvh;
+        height: 100%;
+      }
+      body.play-mode #desktop-layout {
+        display: none !important;
+      }
+      #dialog-restart-confirm::backdrop {
+        background: rgba(0, 0, 0, 0.6);
+      }
+    </style>
+  </head>
+  <body
+    id="app-body"
+    class="min-h-screen antialiased bg-zinc-900 text-zinc-100 transition-colors duration-200"
+  >
+    <!-- Desktop: settings + preview; play mode hides #desktop-layout -->
+    <div
+      id="desktop-layout"
+      class="mx-auto grid min-h-screen w-full max-w-[1600px] grid-cols-1 gap-6 px-4 py-5 lg:grid-cols-2 lg:items-stretch lg:gap-8 lg:px-6 lg:py-6"
+    >
+      <div id="config-panel" class="flex min-h-0 min-w-0 flex-col lg:max-h-[calc(100dvh-2rem)]">
+        <h1 class="text-xl font-semibold tracking-tight text-white">Companion Overlay</h1>
+
+        <div id="config-tabs" class="mt-4 flex min-h-0 min-w-0 flex-1 flex-col">
+          <div class="flex flex-shrink-0 flex-wrap items-end justify-between gap-2 border-b border-zinc-700/90">
+            <div role="tablist" aria-label="Settings" class="flex min-w-0 flex-wrap gap-1">
+            <button
+              type="button"
+              role="tab"
+              id="tab-bild"
+              aria-selected="true"
+              aria-controls="panel-bild"
+              tabindex="0"
+              class="config-tab rounded-t-lg border border-b-0 px-3 py-2 text-sm font-medium transition-colors hover:text-zinc-200"
+            >
+              Image
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="tab-motion"
+              aria-selected="false"
+              aria-controls="panel-motion"
+              tabindex="-1"
+              class="config-tab rounded-t-lg border border-b-0 px-3 py-2 text-sm font-medium transition-colors hover:text-zinc-200"
+            >
+              Motion
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="tab-speak"
+              aria-selected="false"
+              aria-controls="panel-speak"
+              tabindex="-1"
+              class="config-tab rounded-t-lg border border-b-0 px-3 py-2 text-sm font-medium transition-colors hover:text-zinc-200"
+            >
+              Speak
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="tab-teilen"
+              aria-selected="false"
+              aria-controls="panel-teilen"
+              tabindex="-1"
+              class="config-tab rounded-t-lg border border-b-0 px-3 py-2 text-sm font-medium transition-colors hover:text-zinc-200"
+            >
+              Share
+            </button>
+            </div>
+            <button
+              type="button"
+              id="btn-config-restart"
+              class="mb-px shrink-0 rounded-t-lg border border-b-0 border-zinc-600 bg-zinc-800 px-3 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-700 hover:text-white"
+              title="Reload editor with default settings (clears URL parameters)"
+            >
+              Restart
+            </button>
+          </div>
+
+          <form id="config-form" class="flex min-h-0 flex-1 flex-col overflow-hidden" autocomplete="off">
+            <div
+              class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden rounded-b-xl rounded-tr-xl border border-t-0 border-zinc-700/80 bg-zinc-900/30 p-4 lg:pr-2 lg:[scrollbar-gutter:stable]"
+            >
+              <!-- Tab: Image -->
+              <div id="panel-bild" role="tabpanel" aria-labelledby="tab-bild" class="space-y-4">
+                <h2 class="text-sm font-semibold text-zinc-200">Image</h2>
+                <p class="text-xs text-zinc-500">Idle = default pose (e.g. mouth closed). While speaking uses a second asset when set (e.g. talking GIF).</p>
+                <textarea
+                  id="field-imageUrl"
+                  rows="1"
+                  class="hidden"
+                  tabindex="-1"
+                  aria-hidden="true"
+                  autocomplete="off"
+                ></textarea>
+                <div>
+                  <label for="field-imageUrlHttp" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Idle — URL</label>
+                  <input
+                    id="field-imageUrlHttp"
+                    type="url"
+                    inputmode="url"
+                    placeholder="https://… (PNG, WebP, …)"
+                    class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                  />
+                </div>
+                <div id="wrap-image-file-upload">
+                  <label for="input-image-file" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Idle — upload</label>
+                  <input
+                    id="input-image-file"
+                    type="file"
+                    accept="image/png,image/gif,image/jpeg,image/webp,image/svg+xml"
+                    class="block w-full text-sm text-zinc-400 file:mr-3 file:rounded-md file:border-0 file:bg-zinc-700 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-zinc-600"
+                  />
+                  <p class="mt-2 text-xs text-zinc-500">
+                    Image too big?
+                    <a
+                      href="https://imageoptimizer.blackeyestudio.de"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-sky-400 underline decoration-sky-400/50 underline-offset-2 hover:text-sky-300"
+                    >optimize imageoptimizer.blackeyestudio.de</a>
+                  </p>
+                </div>
+                <textarea
+                  id="field-imageUrlSpeak"
+                  rows="1"
+                  class="hidden"
+                  tabindex="-1"
+                  aria-hidden="true"
+                  autocomplete="off"
+                ></textarea>
+                <div>
+                  <label for="field-imageUrlSpeakHttp" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">While speaking — URL (optional)</label>
+                  <input
+                    id="field-imageUrlSpeakHttp"
+                    type="url"
+                    inputmode="url"
+                    placeholder="https://… (GIF, …); leave empty to reuse idle"
+                    class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                  />
+                </div>
+                <div id="wrap-image-speak-file-upload">
+                  <label for="input-image-speak-file" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">While speaking — upload (optional)</label>
+                  <input
+                    id="input-image-speak-file"
+                    type="file"
+                    accept="image/png,image/gif,image/jpeg,image/webp,image/svg+xml"
+                    class="block w-full text-sm text-zinc-400 file:mr-3 file:rounded-md file:border-0 file:bg-zinc-700 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-zinc-600"
+                  />
+                </div>
+                <div class="grid max-w-md grid-cols-1 gap-3">
+                  <div>
+                    <div class="mb-1 flex items-center justify-between gap-3">
+                      <label for="field-scale" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Size</label>
+                      <span id="field-scale-display" class="text-xs font-medium text-zinc-400">200 px</span>
+                    </div>
+                    <input
+                      id="field-scale"
+                      type="range"
+                      min="128"
+                      max="1024"
+                      step="32"
+                      list="field-scale-marks"
+                      class="w-full accent-sky-500"
+                    />
+                    <datalist id="field-scale-marks">
+                      <option value="128"></option>
+                      <option value="256"></option>
+                      <option value="512"></option>
+                      <option value="1024"></option>
+                    </datalist>
+                  </div>
+                  <div class="flex items-center gap-2 pt-1">
+                    <input id="field-mirroring" type="checkbox" class="size-4 rounded border-zinc-600 bg-zinc-950 text-sky-500" />
+                    <label for="field-mirroring" class="text-sm text-zinc-300">Mirroring</label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab: Motion (idle + trigger) -->
+              <div id="panel-motion" role="tabpanel" aria-labelledby="tab-motion" class="space-y-8" hidden>
+                <section class="space-y-3" aria-labelledby="motion-idle-heading">
+                  <h2 id="motion-idle-heading" class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Idle</h2>
+                  <div class="grid max-w-md grid-cols-2 gap-3">
+                    <div class="min-w-0">
+                      <label for="field-animation" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Animation</label>
+                      <select id="field-animation" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"></select>
+                    </div>
+                    <div class="min-w-0">
+                      <label for="field-animationDuration" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Cycle (s)</label>
+                      <input id="field-animationDuration" type="number" min="0.2" max="30" step="0.1" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500" />
+                    </div>
+                  </div>
+                </section>
+
+                <section class="space-y-3 border-t border-zinc-700/60 pt-6" aria-labelledby="motion-trigger-heading">
+                  <h2 id="motion-trigger-heading" class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Trigger</h2>
+                  <div class="grid max-w-md grid-cols-2 gap-3">
+                    <div class="min-w-0">
+                      <label for="field-triggerIn" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">In</label>
+                      <select id="field-triggerIn" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"></select>
+                    </div>
+                    <div class="min-w-0">
+                      <label for="field-triggerDuration" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Duration in (s)</label>
+                      <input id="field-triggerDuration" type="number" min="0.15" max="3" step="0.05" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500" />
+                    </div>
+                    <div class="min-w-0">
+                      <label for="field-triggerOut" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Out</label>
+                      <select id="field-triggerOut" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"></select>
+                    </div>
+                    <div class="min-w-0">
+                      <label for="field-triggerOutDuration" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Duration out (s)</label>
+                      <input id="field-triggerOutDuration" type="number" min="0.15" max="3" step="0.05" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500" />
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <!-- Tab: Speak -->
+              <div id="panel-speak" role="tabpanel" aria-labelledby="tab-speak" class="space-y-8" hidden>
+                <section class="space-y-3" aria-labelledby="speak-text-heading">
+                  <h2 id="speak-text-heading" class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Text</h2>
+                  <div class="grid max-w-md grid-cols-1 gap-3">
+                    <div>
+                      <label for="field-speechText" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Speech text</label>
+                      <textarea id="field-speechText" rows="3" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"></textarea>
+                    </div>
+                    <div>
+                      <label for="field-speechDuration" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Duration (s)</label>
+                      <input id="field-speechDuration" type="number" min="0" max="120" step="0.5" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500" />
+                    </div>
+                    <div class="flex items-center gap-2 pt-1">
+                      <input id="field-autoHideSpeech" type="checkbox" class="size-4 rounded border-zinc-600 bg-zinc-950 text-sky-500" />
+                      <label for="field-autoHideSpeech" class="text-sm text-zinc-300">Auto-hide speech</label>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="space-y-3 border-t border-zinc-700/60 pt-6" aria-labelledby="speak-bubble-heading">
+                  <h2 id="speak-bubble-heading" class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Bubble</h2>
+                  <div class="grid max-w-md grid-cols-2 gap-3">
+                    <div class="min-w-0">
+                      <label for="field-speechPosition" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Position</label>
+                      <select id="field-speechPosition" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500">
+                        <option value="top">Top</option>
+                        <option value="bottom">Bottom (compact)</option>
+                        <option value="subtitle">Bottom (subtitles)</option>
+                        <option value="left">Left</option>
+                        <option value="right">Right</option>
+                      </select>
+                    </div>
+                    <div class="min-w-0" aria-hidden="true"></div>
+                    <div class="min-w-0">
+                      <label for="field-speechBubbleMinWidth" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Min width (px)</label>
+                      <input
+                        id="field-speechBubbleMinWidth"
+                        type="number"
+                        min="0"
+                        max="1200"
+                        step="1"
+                        value="300"
+                        placeholder="0 = auto"
+                        class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                      />
+                    </div>
+                    <div class="min-w-0">
+                      <label for="field-bubbleOpacity" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Fill opacity</label>
+                      <input id="field-bubbleOpacity" type="number" min="0" max="1" step="0.05" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500" />
+                    </div>
+                    <div class="min-w-0">
+                      <label for="field-speechOffsetX" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Offset X (px)</label>
+                      <input id="field-speechOffsetX" type="number" min="-500" max="500" step="1" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500" />
+                    </div>
+                    <div class="min-w-0">
+                      <label for="field-speechOffsetY" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Offset Y (px)</label>
+                      <input id="field-speechOffsetY" type="number" min="-500" max="500" step="1" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500" />
+                    </div>
+                    <div class="relative min-w-0" id="wrap-speech-font-combo">
+                      <label for="field-speechFontSearch" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Font</label>
+                      <input type="hidden" id="field-speechFontListPick" value="" />
+                      <input
+                        id="field-speechFontSearch"
+                        type="text"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-expanded="false"
+                        aria-controls="speech-font-listbox"
+                        autocomplete="off"
+                        spellcheck="false"
+                        placeholder="Search fonts…"
+                        class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                      />
+                      <ul
+                        id="speech-font-listbox"
+                        role="listbox"
+                        class="absolute left-0 right-0 z-[100] mt-1 max-h-64 overflow-y-auto rounded-lg border border-zinc-600 bg-zinc-950 py-1 shadow-xl ring-1 ring-white/10 hidden"
+                        hidden
+                      ></ul>
+                    </div>
+                    <div class="min-w-0">
+                      <label for="field-fontSize" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Font size (px)</label>
+                      <input id="field-fontSize" type="number" min="8" max="72" step="1" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500" />
+                    </div>
+                    <div class="min-w-0">
+                      <label for="field-textColor" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Text color</label>
+                      <input id="field-textColor" type="color" class="h-11 w-full cursor-pointer rounded-lg border border-zinc-700 bg-zinc-950" />
+                    </div>
+                    <div class="min-w-0">
+                      <label for="field-bubbleColor" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Fill color</label>
+                      <input id="field-bubbleColor" type="color" class="h-11 w-full cursor-pointer rounded-lg border border-zinc-700 bg-zinc-950" />
+                    </div>
+                  </div>
+                </section>
+
+                <section class="space-y-3 border-t border-zinc-700/60 pt-6" aria-labelledby="speak-motion-heading">
+                  <h2 id="speak-motion-heading" class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Speech</h2>
+                  <div class="grid max-w-md grid-cols-2 gap-3">
+                    <div class="min-w-0">
+                      <label for="field-nonspeakAnimation" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Pre-speak (once)</label>
+                      <select id="field-nonspeakAnimation" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"></select>
+                    </div>
+                    <div class="min-w-0">
+                      <label for="field-speakAnimation" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">While speaking (loop)</label>
+                      <select id="field-speakAnimation" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"></select>
+                    </div>
+                  </div>
+                  <div class="max-w-md">
+                    <label for="field-speakSound" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Sound</label>
+                    <select id="field-speakSound" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"></select>
+                  </div>
+                  <div id="wrap-speak-sound-custom" class="hidden max-w-md space-y-3">
+                    <textarea
+                      id="field-speakSoundUrl"
+                      rows="1"
+                      class="hidden"
+                      tabindex="-1"
+                      aria-hidden="true"
+                      autocomplete="off"
+                    ></textarea>
+                    <div>
+                      <label for="field-speakSoundUrlHttp" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Sound URL</label>
+                      <input
+                        id="field-speakSoundUrlHttp"
+                        type="url"
+                        inputmode="url"
+                        placeholder="https://… (mp3, ogg, wav, …)"
+                        class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                      />
+                    </div>
+                    <div id="wrap-speak-sound-file-upload">
+                      <label for="input-speak-sound-file" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Upload audio</label>
+                      <input
+                        id="input-speak-sound-file"
+                        type="file"
+                        accept="audio/*,.mp3,.wav,.ogg,.oga,.m4a,.aac,.webm,.flac"
+                        class="block w-full text-sm text-zinc-400 file:mr-3 file:rounded-md file:border-0 file:bg-zinc-700 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-zinc-600"
+                      />
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <!-- Tab: Share -->
+              <div id="panel-teilen" role="tabpanel" aria-labelledby="tab-teilen" class="space-y-4" hidden>
+                <h2 class="text-sm font-semibold text-zinc-200">Share &amp; export</h2>
+                <div class="flex flex-wrap gap-2">
+                  <button type="button" id="btn-copy-url" class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-400">
+                    Copy OBS link
+                  </button>
+                  <button type="button" id="btn-save-txt" class="rounded-lg border border-zinc-600 bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-700">Save config as TXT</button>
+                  <button type="button" id="btn-load-txt" class="rounded-lg border border-zinc-600 bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-700">Load config</button>
+                  <button type="button" id="btn-built-preview" class="rounded-lg border border-zinc-600 bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-700">Show URL</button>
+                </div>
+                <div>
+                  <label for="built-url" class="mb-1 block text-xs text-zinc-500">Generated play URL</label>
+                  <input
+                    id="built-url"
+                    type="text"
+                    readonly
+                    placeholder='Use "Show URL"'
+                    class="w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 font-mono text-xs text-sky-300/90"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label for="field-load-config" class="block text-xs text-zinc-500">Paste URL / TXT</label>
+                  <textarea
+                    id="field-load-config"
+                    rows="3"
+                    placeholder="Paste URL or TXT export"
+                    class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 font-mono text-xs text-zinc-100 placeholder:text-zinc-600 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                  ></textarea>
+                  <div class="flex flex-wrap gap-2">
+                    <button type="button" id="btn-load-pasted-config" class="rounded-lg border border-zinc-600 bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-700">
+                      Load pasted config
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  class="mt-5 max-w-2xl rounded-xl border border-zinc-700/80 bg-zinc-900/40 p-4 text-sm text-zinc-300"
+                >
+                  <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Speech text in the URL</h3>
+                  <p class="mt-2">
+                    Append speech as
+                    <code class="rounded bg-zinc-950 px-1.5 py-0.5 font-mono text-xs text-sky-300/90">#say=…</code>
+                    at the very end of the URL (after the <code class="font-mono text-xs text-zinc-400">?</code> query).
+                    <strong class="text-zinc-200">Copy OBS link</strong> and <strong class="text-zinc-200">Show URL</strong> build that fragment from the speech field so the link and textarea stay in sync.
+                  </p>
+                  <code
+                    class="mt-3 block break-all rounded border border-zinc-700/80 bg-black/30 p-2 font-mono text-[11px] text-sky-300/80"
+                  >https://example.com/index.html?play=1&amp;scale=1#say=Hey%20everyone%20thanks%20for%20watching</code>
+                </div>
+              </div>
+            </div>
+
+            <input id="input-config-txt" type="file" accept=".txt,text/plain" class="sr-only" tabindex="-1" />
+          </form>
+
+          <p id="url-status" class="mt-2 min-h-[1.25rem] flex-shrink-0 text-sm text-emerald-400" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <aside
+        class="flex min-h-0 min-w-0 w-full flex-col lg:sticky lg:top-6"
+        aria-label="Preview 1:1"
+      >
+        <p class="mb-2 w-full text-center text-xs font-medium uppercase tracking-wider text-zinc-500">
+          Preview · 1∶1
+        </p>
+        <div
+          id="config-preview-stage"
+          class="relative aspect-square w-full min-w-0 overflow-hidden rounded-xl border border-zinc-600 bg-zinc-950 shadow-xl ring-1 ring-white/10"
+        >
+          <div
+            id="companion-overlay"
+            hidden
+            class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 [container-type:inline-size]"
+          >
+            <div class="companion-push-layer relative z-[1] flex flex-col items-center gap-1 will-change-transform">
+              <div class="companion-stage relative flex items-center justify-center">
+                <div class="companion-visual relative inline-block leading-none">
+                  <img
+                    class="companion-image relative z-[1] block max-w-none select-none object-contain"
+                    src=""
+                    alt=""
+                    width="200"
+                    height="200"
+                    draggable="false"
+                  />
+                </div>
+                <div class="speech-bubble-wrap pointer-events-none absolute inset-0 z-20">
+                  <div
+                    class="speech-bubble invisible absolute z-20 h-auto w-auto max-w-[min(34rem,96cqi)] whitespace-normal text-left font-medium leading-relaxed [overflow-wrap:anywhere] hyphens-auto rounded-xl px-3 py-2 shadow-lg transition-[opacity,visibility] duration-200 pointer-events-none data-[position=bottom]:left-1/2 data-[position=bottom]:top-full data-[position=bottom]:[margin-top:var(--speech-gap)] data-[position=bottom]:-translate-x-1/2 data-[position=subtitle]:left-1/2 data-[position=subtitle]:top-full data-[position=subtitle]:[margin-top:var(--speech-gap-subtitle)] data-[position=subtitle]:-translate-x-1/2 data-[position=subtitle]:text-center data-[position=subtitle]:max-w-[min(34rem,96cqi)] data-[position=left]:right-full data-[position=left]:top-1/2 data-[position=left]:[margin-right:var(--speech-gap)] data-[position=left]:-translate-y-1/2 data-[position=left]:max-w-[min(34rem,96cqi)] data-[position=right]:left-full data-[position=right]:top-1/2 data-[position=right]:[margin-left:var(--speech-gap)] data-[position=right]:-translate-y-1/2 data-[position=right]:max-w-[min(34rem,96cqi)] data-[position=top]:bottom-full data-[position=top]:left-1/2 data-[position=top]:[margin-bottom:var(--speech-gap)] data-[position=top]:-translate-x-1/2"
+                    role="status"
+                    aria-live="polite"
+                    aria-hidden="true"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <fieldset class="mt-4 w-full flex-shrink-0 rounded-xl border border-zinc-700/80 bg-zinc-900/40 p-4">
+          <legend class="px-1 text-sm font-semibold text-zinc-200">Preview</legend>
+          <div class="mb-3" role="group" aria-label="Preview display mode">
+            <p class="mb-1.5 text-xs font-medium uppercase tracking-wider text-zinc-500">Mode</p>
+            <div class="flex w-full rounded-lg border border-zinc-600 bg-zinc-950 p-0.5">
+              <button
+                type="button"
+                id="btn-preview-mode-settings"
+                class="preview-mode-btn flex-1 rounded-md py-2 text-sm font-medium transition-colors"
+                aria-pressed="true"
+              >
+                Settings
+              </button>
+              <button
+                type="button"
+                id="btn-preview-mode-test"
+                class="preview-mode-btn flex-1 rounded-md py-2 text-sm font-medium transition-colors"
+                aria-pressed="false"
+              >
+                Test
+              </button>
+            </div>
+          </div>
+          <div id="preview-settings-speak-image-wrap" class="mb-3">
+            <div class="flex items-start gap-2 rounded-lg border border-zinc-700/80 bg-zinc-950/60 px-3 py-2.5">
+              <input
+                id="field-previewSpeakingImage"
+                type="checkbox"
+                class="pointer-events-auto mt-0.5 size-4 shrink-0 rounded border-zinc-600 bg-zinc-950 text-sky-500 disabled:cursor-not-allowed disabled:opacity-40"
+                aria-describedby="hint-preview-speaking-image"
+              />
+              <div class="min-w-0 flex-1">
+                <label for="field-previewSpeakingImage" class="text-sm text-zinc-300">Speaking image</label>
+                <p id="hint-preview-speaking-image" class="mt-0.5 text-xs leading-relaxed text-zinc-500">
+                  Show the “while speaking” sprite in this preview so the bubble lines up with the live overlay (Settings mode only).
+                </p>
+              </div>
+            </div>
+          </div>
+          <div id="preview-trigger-test-wrap" class="hidden">
+            <button
+              type="button"
+              id="btn-preview-test"
+              class="w-full rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Trigger test
+            </button>
+          </div>
+        </fieldset>
+      </aside>
+    </div>
+
+    <dialog
+      id="dialog-restart-confirm"
+      class="w-[min(100%-2rem,28rem)] max-w-lg rounded-xl border border-zinc-600 bg-zinc-900 p-0 text-zinc-100 shadow-2xl ring-1 ring-white/10"
+      aria-labelledby="dialog-restart-title"
+      aria-modal="true"
+    >
+      <div class="p-6">
+        <h2 id="dialog-restart-title" class="text-lg font-semibold tracking-tight">Reset all settings?</h2>
+        <p class="mt-2 text-sm leading-relaxed text-zinc-400">
+          Do you really want to reset all settings? The page will reload and your URL parameters will be cleared.
+        </p>
+        <div class="mt-6 flex flex-wrap justify-end gap-2">
+          <button
+            type="button"
+            id="btn-restart-cancel"
+            class="rounded-lg border border-zinc-600 bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-700"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            id="btn-restart-confirm"
+            class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <script defer src="app.js"></script>
+  </body>
+</html>
