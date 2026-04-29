@@ -598,6 +598,42 @@
                       class="mt-3 block break-all rounded border border-zinc-700/80 bg-black/30 p-2 font-mono text-[11px] text-sky-300/80"
                     >file:///.../configs/default/output.html#say=Hey%20everyone%20thanks%20for%20watching</code>
                   </div>
+                  <div class="mt-4 rounded-lg border border-zinc-700/80 bg-zinc-950/60 p-3">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Streamer.bot C# example</p>
+                    <p class="mt-2 text-sm text-zinc-300">Paste this into a C# action, then replace the scene name, browser source name, and local file path.</p>
+                    <pre class="mt-3 overflow-x-auto rounded border border-zinc-700/80 bg-black/30 p-3 text-[11px] leading-relaxed text-sky-300/80"><code>public bool Execute()
+{
+    string scene = "Your Scene";
+    string source = "Your Browser Source";
+    string baseUrl = "file:///C:/stream-companion/configs/default/output.html";
+
+    CPH.TryGetArg("rawInput", out string speechText);
+    speechText ??= "";
+
+    string url = baseUrl + "#say=" + CPH.UrlEncode(speechText);
+    CPH.ObsSetBrowserSource(scene, source, url);
+    return true;
+}</code></pre>
+                    <p class="mt-2 text-xs leading-relaxed text-zinc-500">Use the message text you want to show as <code class="rounded bg-zinc-950 px-1 py-0.5 font-mono text-[11px] text-zinc-300">rawInput</code> or swap in another variable. Spaces and special characters are handled by <code class="rounded bg-zinc-950 px-1 py-0.5 font-mono text-[11px] text-zinc-300">CPH.UrlEncode(...)</code>.</p>
+                  </div>
+                  <div class="mt-4 rounded-lg border border-zinc-700/80 bg-zinc-950/60 p-3">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Chat trigger variant</p>
+                    <p class="mt-2 text-sm text-zinc-300">Use this when the action is triggered directly from Twitch or YouTube chat messages. Those triggers provide the chat text as <code class="rounded bg-zinc-950 px-1 py-0.5 font-mono text-[11px] text-zinc-300">%message%</code>.</p>
+                    <pre class="mt-3 overflow-x-auto rounded border border-zinc-700/80 bg-black/30 p-3 text-[11px] leading-relaxed text-sky-300/80"><code>public bool Execute()
+{
+    string scene = "Your Scene";
+    string source = "Your Browser Source";
+    string baseUrl = "file:///C:/stream-companion/configs/default/output.html";
+
+    CPH.TryGetArg("message", out string speechText);
+    speechText ??= "";
+
+    string url = baseUrl + "#say=" + CPH.UrlEncode(speechText);
+    CPH.ObsSetBrowserSource(scene, source, url);
+    return true;
+}</code></pre>
+                    <p class="mt-2 text-xs leading-relaxed text-zinc-500">For command-based actions, use <code class="rounded bg-zinc-950 px-1 py-0.5 font-mono text-[11px] text-zinc-300">rawInput</code> instead. For direct Twitch Chat Message and YouTube Chat Message triggers, use <code class="rounded bg-zinc-950 px-1 py-0.5 font-mono text-[11px] text-zinc-300">message</code>.</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -3982,6 +4018,8 @@
       root.removeAttribute('data-play-mode');
     }
 
+    cleanEditorUrlOnBoot();
+
     if (isHostedBlackeyeMode()) {
       initHostedDownloadOnly();
       return Promise.resolve();
@@ -3989,7 +4027,6 @@
 
     var hosted = $('hosted-download-screen');
     if (hosted) hosted.hidden = true;
-    cleanEditorUrlOnBoot();
 
     return init(root);
   }
