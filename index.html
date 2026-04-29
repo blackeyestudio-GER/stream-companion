@@ -815,6 +815,7 @@
   var DEFAULT_CONFIG_NAME = 'default';
   var CONFIGS_ROOT_DIR = 'configs';
   var CONFIG_FILENAME_JSON = 'config.json';
+  var LAST_EDITOR_CONFIG_STORAGE_KEY = 'stream-companion:last-editor-config';
   var STANDARD_IDLE_IMAGE_FILE = 'idle.png';
   var STANDARD_TALK_IMAGE_FILE = 'talk.png';
   var MANAGED_SOUND_BASENAME = 'sound';
@@ -1188,9 +1189,28 @@
     return normalized;
   }
 
-  function getRequestedConfigName() {
-    var p = new URLSearchParams(window.location.search);
-    return sanitizeConfigName(p.get('config') || DEFAULT_CONFIG_NAME);
+  function canUseLocalStorage() {
+    try {
+      return !!window.localStorage;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function getStoredEditorConfigName() {
+    if (!canUseLocalStorage()) return DEFAULT_CONFIG_NAME;
+    try {
+      return sanitizeConfigName(window.localStorage.getItem(LAST_EDITOR_CONFIG_STORAGE_KEY) || DEFAULT_CONFIG_NAME);
+    } catch (e) {
+      return DEFAULT_CONFIG_NAME;
+    }
+  }
+
+  function setStoredEditorConfigName(name) {
+    if (!canUseLocalStorage()) return;
+    try {
+      window.localStorage.setItem(LAST_EDITOR_CONFIG_STORAGE_KEY, sanitizeConfigName(name));
+    } catch (e) {}
   }
 
   function pickManagedImageSetting(raw, fallbackName) {
@@ -1274,20 +1294,20 @@
   function buildNamedConfigQuery(settings, forPlay) {
     var p = new URLSearchParams();
     if (forPlay) p.set('play', '1');
-    p.set('config', sanitizeConfigName(settings && settings.__configName ? settings.__configName : getRequestedConfigName()));
+    p.set('config', sanitizeConfigName(settings && settings.__configName ? settings.__configName : getStoredEditorConfigName()));
     return p.toString();
   }
 
   function buildPlayUrl(settings) {
     var configName = sanitizeConfigName(
-      settings && settings.__configName ? settings.__configName : getRequestedConfigName()
+      settings && settings.__configName ? settings.__configName : getStoredEditorConfigName()
     );
     var outputUrl = new URL(CONFIGS_ROOT_DIR + '/' + configName + '/output.html', getDocumentBaseUrl()).href;
     return outputUrl + speechTextHashFragment(settings);
   }
 
   function buildConfigEditorQuery(settings) {
-    return buildNamedConfigQuery(settings, false);
+    return '';
   }
 
   function normalizeSettings(settings) {
@@ -1458,7 +1478,8 @@
     sanitizeConfigName: sanitizeConfigName,
     buildConfigMeta: buildConfigMeta,
     attachConfigMeta: attachConfigMeta,
-    getRequestedConfigName: getRequestedConfigName,
+    getStoredEditorConfigName: getStoredEditorConfigName,
+    setStoredEditorConfigName: setStoredEditorConfigName,
     serialize: serialize,
     buildPlayUrl: buildPlayUrl,
     buildConfigEditorQuery: buildConfigEditorQuery,
@@ -2649,7 +2670,7 @@
       function (settings) {
         writeForm(settings);
         updateConfigNameUi();
-        history.replaceState(null, '', window.location.pathname + '?' + CompanionConfig.buildConfigEditorQuery(settings));
+        CompanionConfig.setStoredEditorConfigName(configName);
         setBuiltUrlValue(CompanionConfig.buildPlayUrl(readForm()));
         setStatus('Loaded named config "' + configName + '".', 'success');
         setAutoSaveState('Saved', 'success', 'Editing ' + configName + '/config.json.');
@@ -3178,16 +3199,12 @@
     buildSpeechFontList();
   }
 
-  function syncConfigUrlFromForm() {
-    try {
-      var settings = readForm();
-      var q = CompanionConfig.buildConfigEditorQuery(settings);
-      var frag = speechTextHashFragment(settings);
-      var next = window.location.pathname + (q ? '?' + q : '') + frag;
-      var cur = window.location.pathname + window.location.search + window.location.hash;
-      if (next === cur) return;
-      history.replaceState(null, '', next);
-    } catch (e) {}
+  function syncConfigUrlFromForm() {}
+
+  function cleanEditorUrlOnBoot() {
+    if (window.location.search || window.location.hash) {
+      history.replaceState(null, '', window.location.pathname);
+    }
   }
 
   function getPreviewDisplayMode(root) {
@@ -3429,23 +3446,15 @@
     if (boot && typeof boot === 'object') {
       return Promise.resolve(CompanionConfig.attachConfigMeta(Object.assign({}, CompanionConfig.DEFAULTS, boot), currentConfigMeta));
     }
-    var params = new URLSearchParams(window.location.search);
-    var requestedConfig = params.get('config');
-    if (requestedConfig || !params.toString()) {
-      return CompanionConfig.loadNamedConfig(requestedConfig || CompanionConfig.DEFAULT_CONFIG_NAME).catch(function () {
-        if (requestedConfig) {
-          setStatus('Could not load config "' + CompanionConfig.sanitizeConfigName(requestedConfig) + '". Using default config.', 'warning');
-        }
-        return CompanionConfig.loadNamedConfig(CompanionConfig.DEFAULT_CONFIG_NAME).catch(function () {
-          return CompanionConfig.attachConfigMeta(CompanionConfig.DEFAULTS, CompanionConfig.buildConfigMeta(CompanionConfig.DEFAULT_CONFIG_NAME));
-        });
+    var storedConfig = CompanionConfig.getStoredEditorConfigName();
+    return CompanionConfig.loadNamedConfig(storedConfig).catch(function () {
+      if (storedConfig !== CompanionConfig.DEFAULT_CONFIG_NAME) {
+        setStatus('Could not load stored config "' + storedConfig + '". Using default config.', 'warning');
+      }
+      return CompanionConfig.loadNamedConfig(CompanionConfig.DEFAULT_CONFIG_NAME).catch(function () {
+        return CompanionConfig.attachConfigMeta(CompanionConfig.DEFAULTS, CompanionConfig.buildConfigMeta(CompanionConfig.DEFAULT_CONFIG_NAME));
       });
-    }
-    var hasSayInHash = CompanionConfig.parseSpeechTextFromHash() !== null;
-    if (params.toString() || hasSayInHash) {
-      return Promise.resolve(CompanionConfig.attachConfigMeta(CompanionConfig.parseFromLocation(), currentConfigMeta));
-    }
-    return Promise.resolve(CompanionConfig.attachConfigMeta(CompanionConfig.DEFAULTS, CompanionConfig.buildConfigMeta(CompanionConfig.DEFAULT_CONFIG_NAME)));
+    });
   }
 
   function setOverlayLayoutConfig(root) {
@@ -3980,6 +3989,7 @@
 
     var hosted = $('hosted-download-screen');
     if (hosted) hosted.hidden = true;
+    cleanEditorUrlOnBoot();
 
     return init(root);
   }
