@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Companion Overlay</title>
+    <title>Companion Output</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -95,9 +95,6 @@
       };
     </script>
     <style>
-      [hidden] {
-        display: none !important;
-      }
       .companion-visual.cmp-idle-offstage {
         visibility: hidden;
         opacity: 0;
@@ -142,59 +139,7 @@
       class="mx-auto grid min-h-screen w-full max-w-[1600px] grid-cols-1 gap-6 px-4 py-5 lg:grid-cols-2 lg:items-stretch lg:gap-8 lg:px-6 lg:py-6"
     >
       <div id="config-panel" class="flex min-h-0 min-w-0 flex-col lg:max-h-[calc(100dvh-2rem)]">
-        <section class="rounded-2xl border border-zinc-700/80 bg-zinc-900/50 p-4 shadow-lg ring-1 ring-white/5">
-          <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div class="min-w-0 space-y-3">
-              <div>
-                <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Companion Overlay</p>
-                <h1 class="mt-1 text-2xl font-semibold tracking-tight text-white">Local Config Editor</h1>
-              </div>
-              <div class="grid gap-3 sm:grid-cols-2">
-                <div class="rounded-xl border border-zinc-700/80 bg-zinc-950/70 px-3 py-2.5">
-                  <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Current config</p>
-                  <p id="editor-config-name" class="mt-1 truncate font-mono text-sm text-zinc-100">default</p>
-                </div>
-                <div class="rounded-xl border border-zinc-700/80 bg-zinc-950/70 px-3 py-2.5">
-                  <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Project folder</p>
-                  <p id="editor-project-name" class="mt-1 truncate text-sm text-zinc-300">No folder selected</p>
-                </div>
-              </div>
-            </div>
-            <div class="flex w-full flex-col gap-3 lg:w-auto lg:min-w-[18rem]">
-              <div class="flex items-center justify-between rounded-xl border border-zinc-700/80 bg-zinc-950/70 px-3 py-2.5">
-                <div>
-                  <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Autosave</p>
-                  <p id="editor-save-detail" class="mt-1 text-xs text-zinc-500">Changes are written to the open config automatically.</p>
-                </div>
-                <span id="editor-save-state" class="rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-1 text-[11px] font-medium text-zinc-300">Waiting</span>
-              </div>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  id="btn-editor-select-folder"
-                  class="rounded-lg bg-sky-600 px-3 py-2 text-sm font-medium text-white shadow hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-400"
-                >
-                  Select project folder
-                </button>
-                <button
-                  type="button"
-                  id="btn-editor-open-config"
-                  class="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-700"
-                >
-                  Open or create config
-                </button>
-                <button
-                  type="button"
-                  id="btn-config-restart"
-                  class="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-700 hover:text-white"
-                  title="Reload editor with the default named config"
-                >
-                  Restart
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
+        <h1 class="text-xl font-semibold tracking-tight text-white">Companion Overlay</h1>
 
         <div id="config-tabs" class="mt-4 flex min-h-0 min-w-0 flex-1 flex-col">
           <div class="flex flex-shrink-0 flex-wrap items-end justify-between gap-2 border-b border-zinc-700/90">
@@ -230,7 +175,7 @@
               tabindex="-1"
               class="config-tab rounded-t-lg border border-b-0 px-3 py-2 text-sm font-medium transition-colors hover:text-zinc-200"
             >
-              Speech
+              Speak
             </button>
             <button
               type="button"
@@ -244,6 +189,14 @@
               OBS
             </button>
             </div>
+            <button
+              type="button"
+              id="btn-config-restart"
+              class="mb-px shrink-0 rounded-t-lg border border-b-0 border-zinc-600 bg-zinc-800 px-3 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-700 hover:text-white"
+              title="Reload editor with the default named config"
+            >
+              Restart
+            </button>
           </div>
 
           <form id="config-form" class="flex min-h-0 flex-1 flex-col overflow-hidden" autocomplete="off">
@@ -252,137 +205,137 @@
             >
               <!-- Tab: Image -->
               <div id="panel-bild" role="tabpanel" aria-labelledby="tab-bild" class="space-y-4">
-                <textarea id="field-imageUrl" rows="1" class="hidden" tabindex="-1" aria-hidden="true" autocomplete="off"></textarea>
-                <textarea id="field-imageUrlSpeak" rows="1" class="hidden" tabindex="-1" aria-hidden="true" autocomplete="off"></textarea>
-                <div class="rounded-xl border border-zinc-700/80 bg-zinc-900/40 p-4">
-                  <h2 class="text-sm font-semibold text-zinc-100">Global image layout</h2>
-                  <p class="mt-1 text-xs leading-relaxed text-zinc-500">Size and mirroring affect both states. Idle and talk each have their own 3D pose below.</p>
-                  <div class="mt-4 grid max-w-xl grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div class="sm:col-span-2">
-                      <div class="mb-1 flex items-center justify-between gap-3">
-                        <label for="field-scale" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Size</label>
-                        <span id="field-scale-display" class="text-xs font-medium text-zinc-400">200 px</span>
-                      </div>
-                      <input id="field-scale" type="range" min="128" max="1024" step="32" list="field-scale-marks" class="w-full accent-sky-500" />
-                      <datalist id="field-scale-marks">
-                        <option value="128"></option>
-                        <option value="256"></option>
-                        <option value="512"></option>
-                        <option value="1024"></option>
-                      </datalist>
+                <h2 class="text-sm font-semibold text-zinc-200">Image</h2>
+                <p class="text-xs text-zinc-500">Use simple files in the current config folder, e.g. <code class="rounded bg-zinc-950 px-1.5 py-0.5 font-mono text-[11px] text-sky-300/90">idle.png</code> and <code class="rounded bg-zinc-950 px-1.5 py-0.5 font-mono text-[11px] text-sky-300/90">talk.png</code>.</p>
+                <textarea
+                  id="field-imageUrl"
+                  rows="1"
+                  class="hidden"
+                  tabindex="-1"
+                  aria-hidden="true"
+                  autocomplete="off"
+                ></textarea>
+                <div id="wrap-image-file-upload" class="space-y-2">
+                  <div class="rounded-lg border border-zinc-700/80 bg-zinc-950/60 px-3 py-2 text-xs leading-relaxed text-zinc-500">
+                    Uploads are stored as <code class="rounded bg-zinc-900 px-1 py-0.5 font-mono text-[11px] text-zinc-300">idle.png</code> in the selected config folder. The config can leave the field empty.
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <button type="button" id="btn-upload-idle-image" class="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-700">
+                      Upload idle.png
+                    </button>
+                  </div>
+                  <input id="input-image-file" type="file" accept="image/png,image/gif,image/jpeg,image/webp,image/svg+xml" class="sr-only" tabindex="-1" />
+                </div>
+                <textarea
+                  id="field-imageUrlSpeak"
+                  rows="1"
+                  class="hidden"
+                  tabindex="-1"
+                  aria-hidden="true"
+                  autocomplete="off"
+                ></textarea>
+                <div id="wrap-image-speak-file-upload" class="space-y-2">
+                  <div class="rounded-lg border border-zinc-700/80 bg-zinc-950/60 px-3 py-2 text-xs leading-relaxed text-zinc-500">
+                    Uploads are stored as <code class="rounded bg-zinc-900 px-1 py-0.5 font-mono text-[11px] text-zinc-300">talk.png</code> in the selected config folder. The config can leave the field empty.
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <button type="button" id="btn-upload-talk-image" class="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-700">
+                      Upload talk.png
+                    </button>
+                  </div>
+                  <input id="input-image-speak-file" type="file" accept="image/png,image/gif,image/jpeg,image/webp,image/svg+xml" class="sr-only" tabindex="-1" />
+                </div>
+                <div class="grid max-w-md grid-cols-1 gap-3">
+                  <div>
+                    <div class="mb-1 flex items-center justify-between gap-3">
+                      <label for="field-scale" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Size</label>
+                      <span id="field-scale-display" class="text-xs font-medium text-zinc-400">200 px</span>
                     </div>
-                    <div class="sm:col-span-2 flex items-center gap-2 pt-1">
-                      <input id="field-mirroring" type="checkbox" class="size-4 rounded border-zinc-600 bg-zinc-950 text-sky-500" />
-                      <label for="field-mirroring" class="text-sm text-zinc-300">Mirroring</label>
-                    </div>
+                    <input
+                      id="field-scale"
+                      type="range"
+                      min="128"
+                      max="1024"
+                      step="32"
+                      list="field-scale-marks"
+                      class="w-full accent-sky-500"
+                    />
+                    <datalist id="field-scale-marks">
+                      <option value="128"></option>
+                      <option value="256"></option>
+                      <option value="512"></option>
+                      <option value="1024"></option>
+                    </datalist>
+                  </div>
+                  <div class="flex items-center gap-2 pt-1">
+                    <input id="field-mirroring" type="checkbox" class="size-4 rounded border-zinc-600 bg-zinc-950 text-sky-500" />
+                    <label for="field-mirroring" class="text-sm text-zinc-300">Mirroring</label>
                   </div>
                 </div>
-                <div class="rounded-xl border border-zinc-700/80 bg-zinc-950/40 p-4">
+                <section class="space-y-3 border-t border-zinc-700/60 pt-5" aria-labelledby="image-pose-heading">
                   <div class="flex items-center justify-between gap-3">
-                    <div>
-                      <h2 class="text-sm font-semibold text-zinc-100">Image states</h2>
-                      <p class="mt-1 text-xs leading-relaxed text-zinc-500">Idle and talk can now be posed independently.</p>
-                    </div>
-                    <div class="flex rounded-xl border border-zinc-700/80 bg-zinc-950/70 p-1" role="tablist" aria-label="Image states">
-                      <button type="button" id="btn-image-editor-tab-idle" role="tab" aria-controls="panel-image-editor-idle" aria-selected="true" class="rounded-lg px-3 py-2 text-sm font-medium transition-colors">Idle</button>
-                      <button type="button" id="btn-image-editor-tab-talk" role="tab" aria-controls="panel-image-editor-talk" aria-selected="false" class="rounded-lg px-3 py-2 text-sm font-medium transition-colors">Talk</button>
-                    </div>
+                    <h3 id="image-pose-heading" class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Pose</h3>
+                    <button type="button" id="btn-reset-image-pose" class="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-100 hover:bg-zinc-700">
+                      Reset pose
+                    </button>
                   </div>
-                  <div id="panel-image-editor-idle" role="tabpanel" class="mt-4 space-y-4">
-                    <div class="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
-                      <div class="space-y-3">
-                        <div class="flex items-center justify-between gap-3">
-                          <div>
-                            <h3 class="text-sm font-semibold text-zinc-100">Idle pose</h3>
-                            <p class="mt-1 text-xs leading-relaxed text-zinc-500">Drag the preview to set the idle angle.</p>
-                          </div>
-                          <button type="button" id="btn-reset-image-pose-idle" class="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-100 hover:bg-zinc-700">Reset</button>
-                        </div>
-                        <div id="image-pose-preview-idle" data-mode="idle" class="relative flex aspect-square w-full max-w-[18rem] items-center justify-center overflow-hidden rounded-2xl border border-zinc-700/80 bg-[radial-gradient(circle_at_center,_rgba(56,189,248,0.14),_rgba(24,24,27,0.96)_72%)] shadow-lg shadow-black/20">
-                          <div class="pointer-events-none absolute inset-3 rounded-xl border border-dashed border-zinc-600/80"></div>
-                          <div class="pointer-events-none absolute left-1/2 top-3 bottom-3 w-px -translate-x-1/2 bg-zinc-700/70"></div>
-                          <div class="pointer-events-none absolute top-1/2 left-3 right-3 h-px -translate-y-1/2 bg-zinc-700/70"></div>
-                          <div id="image-pose-dot-idle" class="pointer-events-none absolute left-1/2 top-1/2 z-20 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-sky-300 bg-sky-400 shadow-[0_0_18px_rgba(56,189,248,0.55)]"></div>
-                          <img id="image-pose-preview-image-idle" src="" alt="" draggable="false" class="relative z-10 block max-h-[72%] max-w-[72%] select-none object-contain" />
-                        </div>
-                      </div>
-                      <div class="space-y-4">
-                        <section class="rounded-xl border border-zinc-700/80 bg-zinc-900/40 p-4">
-                          <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-700/80 bg-zinc-950/60 px-3 py-2.5">
-                            <div>
-                              <p class="text-sm font-medium text-zinc-200">idle.png</p>
-                              <p id="status-idle-image" class="mt-1 text-xs text-zinc-500">Expected next to config.json.</p>
-                            </div>
-                            <button type="button" id="btn-upload-idle-image" class="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-700">Upload idle.png</button>
-                          </div>
-                          <input id="input-image-file" type="file" accept="image/png,image/gif,image/jpeg,image/webp,image/svg+xml" class="sr-only" tabindex="-1" />
-                        </section>
-                        <section class="rounded-xl border border-zinc-700/80 bg-zinc-900/40 p-4">
-                          <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Transform</h3>
-                          <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <div><div class="mb-1 flex items-center justify-between gap-3"><label for="field-idle-imageRotateX" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Rotate X</label><span id="field-idle-imageRotateX-display" class="text-xs font-medium text-zinc-400">0°</span></div><input id="field-idle-imageRotateX" type="range" min="-45" max="45" step="1" class="w-full accent-sky-500" /></div>
-                            <div><div class="mb-1 flex items-center justify-between gap-3"><label for="field-idle-imageRotateY" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Rotate Y</label><span id="field-idle-imageRotateY-display" class="text-xs font-medium text-zinc-400">0°</span></div><input id="field-idle-imageRotateY" type="range" min="-45" max="45" step="1" class="w-full accent-sky-500" /></div>
-                            <div class="sm:col-span-2"><div class="mb-1 flex items-center justify-between gap-3"><label for="field-idle-imageRotateZ" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Rotate Z</label><span id="field-idle-imageRotateZ-display" class="text-xs font-medium text-zinc-400">0°</span></div><input id="field-idle-imageRotateZ" type="range" min="-45" max="45" step="1" class="w-full accent-sky-500" /></div>
-                          </div>
-                        </section>
-                        <section class="rounded-xl border border-zinc-700/80 bg-zinc-900/40 p-4">
-                          <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Lighting</h3>
-                          <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <div><div class="mb-1 flex items-center justify-between gap-3"><label for="field-idle-imageShadowOpacity" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Shadow</label><span id="field-idle-imageShadowOpacity-display" class="text-xs font-medium text-zinc-400">35%</span></div><input id="field-idle-imageShadowOpacity" type="range" min="0" max="1" step="0.05" class="w-full accent-sky-500" /></div>
-                            <div><div class="mb-1 flex items-center justify-between gap-3"><label for="field-idle-imageShadowDepth" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Shadow depth</label><span id="field-idle-imageShadowDepth-display" class="text-xs font-medium text-zinc-400">14 px</span></div><input id="field-idle-imageShadowDepth" type="range" min="0" max="48" step="1" class="w-full accent-sky-500" /></div>
-                          </div>
-                        </section>
-                      </div>
+                  <p class="text-xs leading-relaxed text-zinc-500">Drag the image like in the dice editor. Center is the frontal base pose. Rotation is limited to 45° in every direction.</p>
+                  <div class="grid gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
+                    <div
+                      id="image-pose-preview"
+                      class="relative flex aspect-square w-full max-w-[16rem] items-center justify-center overflow-hidden rounded-2xl border border-zinc-700/80 bg-[radial-gradient(circle_at_center,_rgba(56,189,248,0.14),_rgba(24,24,27,0.96)_72%)] shadow-lg shadow-black/20"
+                    >
+                      <div class="pointer-events-none absolute inset-3 rounded-xl border border-dashed border-zinc-600/80"></div>
+                      <div class="pointer-events-none absolute left-1/2 top-3 bottom-3 w-px -translate-x-1/2 bg-zinc-700/70"></div>
+                    <div class="pointer-events-none absolute top-1/2 left-3 right-3 h-px -translate-y-1/2 bg-zinc-700/70"></div>
+                    <div id="image-pose-dot" class="pointer-events-none absolute left-1/2 top-1/2 z-20 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-sky-300 bg-sky-400 shadow-[0_0_18px_rgba(56,189,248,0.55)]"></div>
+                    <img
+                      id="image-pose-preview-image"
+                        src=""
+                        alt=""
+                        draggable="false"
+                        class="relative z-10 block max-h-[72%] max-w-[72%] select-none object-contain"
+                      />
                     </div>
-                  </div>
-                  <div id="panel-image-editor-talk" role="tabpanel" class="mt-4 space-y-4" hidden>
-                    <div class="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
-                      <div class="space-y-3">
-                        <div class="flex items-center justify-between gap-3">
-                          <div>
-                            <h3 class="text-sm font-semibold text-zinc-100">Talk pose</h3>
-                            <p class="mt-1 text-xs leading-relaxed text-zinc-500">Drag the preview to set the speaking angle.</p>
-                          </div>
-                          <button type="button" id="btn-reset-image-pose-talk" class="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-100 hover:bg-zinc-700">Reset</button>
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <div class="mb-1 flex items-center justify-between gap-3">
+                          <label for="field-imageRotateX" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Rotate X</label>
+                          <span id="field-imageRotateX-display" class="text-xs font-medium text-zinc-400">0°</span>
                         </div>
-                        <div id="image-pose-preview-talk" data-mode="talk" class="relative flex aspect-square w-full max-w-[18rem] items-center justify-center overflow-hidden rounded-2xl border border-zinc-700/80 bg-[radial-gradient(circle_at_center,_rgba(56,189,248,0.14),_rgba(24,24,27,0.96)_72%)] shadow-lg shadow-black/20">
-                          <div class="pointer-events-none absolute inset-3 rounded-xl border border-dashed border-zinc-600/80"></div>
-                          <div class="pointer-events-none absolute left-1/2 top-3 bottom-3 w-px -translate-x-1/2 bg-zinc-700/70"></div>
-                          <div class="pointer-events-none absolute top-1/2 left-3 right-3 h-px -translate-y-1/2 bg-zinc-700/70"></div>
-                          <div id="image-pose-dot-talk" class="pointer-events-none absolute left-1/2 top-1/2 z-20 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-sky-300 bg-sky-400 shadow-[0_0_18px_rgba(56,189,248,0.55)]"></div>
-                          <img id="image-pose-preview-image-talk" src="" alt="" draggable="false" class="relative z-10 block max-h-[72%] max-w-[72%] select-none object-contain" />
-                        </div>
+                        <input id="field-imageRotateX" type="range" min="-45" max="45" step="1" class="w-full accent-sky-500" />
                       </div>
-                      <div class="space-y-4">
-                        <section class="rounded-xl border border-zinc-700/80 bg-zinc-900/40 p-4">
-                          <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-700/80 bg-zinc-950/60 px-3 py-2.5">
-                            <div>
-                              <p class="text-sm font-medium text-zinc-200">talk.png</p>
-                              <p id="status-talk-image" class="mt-1 text-xs text-zinc-500">Used while speaking when present.</p>
-                            </div>
-                            <button type="button" id="btn-upload-talk-image" class="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-700">Upload talk.png</button>
-                          </div>
-                          <input id="input-image-speak-file" type="file" accept="image/png,image/gif,image/jpeg,image/webp,image/svg+xml" class="sr-only" tabindex="-1" />
-                        </section>
-                        <section class="rounded-xl border border-zinc-700/80 bg-zinc-900/40 p-4">
-                          <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Transform</h3>
-                          <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <div><div class="mb-1 flex items-center justify-between gap-3"><label for="field-talk-imageRotateX" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Rotate X</label><span id="field-talk-imageRotateX-display" class="text-xs font-medium text-zinc-400">0°</span></div><input id="field-talk-imageRotateX" type="range" min="-45" max="45" step="1" class="w-full accent-sky-500" /></div>
-                            <div><div class="mb-1 flex items-center justify-between gap-3"><label for="field-talk-imageRotateY" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Rotate Y</label><span id="field-talk-imageRotateY-display" class="text-xs font-medium text-zinc-400">0°</span></div><input id="field-talk-imageRotateY" type="range" min="-45" max="45" step="1" class="w-full accent-sky-500" /></div>
-                            <div class="sm:col-span-2"><div class="mb-1 flex items-center justify-between gap-3"><label for="field-talk-imageRotateZ" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Rotate Z</label><span id="field-talk-imageRotateZ-display" class="text-xs font-medium text-zinc-400">0°</span></div><input id="field-talk-imageRotateZ" type="range" min="-45" max="45" step="1" class="w-full accent-sky-500" /></div>
-                          </div>
-                        </section>
-                        <section class="rounded-xl border border-zinc-700/80 bg-zinc-900/40 p-4">
-                          <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Lighting</h3>
-                          <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <div><div class="mb-1 flex items-center justify-between gap-3"><label for="field-talk-imageShadowOpacity" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Shadow</label><span id="field-talk-imageShadowOpacity-display" class="text-xs font-medium text-zinc-400">35%</span></div><input id="field-talk-imageShadowOpacity" type="range" min="0" max="1" step="0.05" class="w-full accent-sky-500" /></div>
-                            <div><div class="mb-1 flex items-center justify-between gap-3"><label for="field-talk-imageShadowDepth" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Shadow depth</label><span id="field-talk-imageShadowDepth-display" class="text-xs font-medium text-zinc-400">14 px</span></div><input id="field-talk-imageShadowDepth" type="range" min="0" max="48" step="1" class="w-full accent-sky-500" /></div>
-                          </div>
-                        </section>
+                      <div>
+                        <div class="mb-1 flex items-center justify-between gap-3">
+                          <label for="field-imageRotateY" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Rotate Y</label>
+                          <span id="field-imageRotateY-display" class="text-xs font-medium text-zinc-400">0°</span>
+                        </div>
+                        <input id="field-imageRotateY" type="range" min="-45" max="45" step="1" class="w-full accent-sky-500" />
+                      </div>
+                      <div>
+                        <div class="mb-1 flex items-center justify-between gap-3">
+                          <label for="field-imageRotateZ" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Rotate Z</label>
+                          <span id="field-imageRotateZ-display" class="text-xs font-medium text-zinc-400">0°</span>
+                        </div>
+                        <input id="field-imageRotateZ" type="range" min="-45" max="45" step="1" class="w-full accent-sky-500" />
+                      </div>
+                      <div>
+                        <div class="mb-1 flex items-center justify-between gap-3">
+                          <label for="field-imageShadowOpacity" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Shadow</label>
+                          <span id="field-imageShadowOpacity-display" class="text-xs font-medium text-zinc-400">35%</span>
+                        </div>
+                        <input id="field-imageShadowOpacity" type="range" min="0" max="1" step="0.05" class="w-full accent-sky-500" />
+                      </div>
+                      <div>
+                        <div class="mb-1 flex items-center justify-between gap-3">
+                          <label for="field-imageShadowDepth" class="block text-xs font-medium uppercase tracking-wide text-zinc-500">Shadow depth</label>
+                          <span id="field-imageShadowDepth-display" class="text-xs font-medium text-zinc-400">14 px</span>
+                        </div>
+                        <input id="field-imageShadowDepth" type="range" min="0" max="48" step="1" class="w-full accent-sky-500" />
                       </div>
                     </div>
                   </div>
-                </div>
+                </section>
               </div>
 
               <!-- Tab: Motion (idle + trigger) -->
@@ -421,15 +374,6 @@
                       <input id="field-triggerOutDuration" type="number" min="0.15" max="3" step="0.05" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500" />
                     </div>
                   </div>
-                  <div class="max-w-md">
-                    <div class="flex items-start gap-2 rounded-lg border border-zinc-700/80 bg-zinc-950/60 px-3 py-2.5">
-                      <input id="field-useTalkImageForTrigger" type="checkbox" class="mt-0.5 size-4 rounded border-zinc-600 bg-zinc-950 text-sky-500" />
-                      <div>
-                        <label for="field-useTalkImageForTrigger" class="text-sm text-zinc-300">Use talk image for trigger</label>
-                        <p class="mt-0.5 text-xs leading-relaxed text-zinc-500">When enabled, trigger-in and trigger-out use the talk pose instead of the idle pose.</p>
-                      </div>
-                    </div>
-                  </div>
                 </section>
               </div>
 
@@ -437,7 +381,6 @@
               <div id="panel-speak" role="tabpanel" aria-labelledby="tab-speak" class="space-y-8" hidden>
                 <section class="space-y-3" aria-labelledby="speak-text-heading">
                   <h2 id="speak-text-heading" class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Text</h2>
-                  <p class="text-xs leading-relaxed text-zinc-500"><code class="rounded bg-zinc-950 px-1 py-0.5 font-mono text-[11px] text-sky-300/90">#say=...</code> remains the primary live input for Streamer.bot. <code class="rounded bg-zinc-950 px-1 py-0.5 font-mono text-[11px] text-sky-300/90">speechText</code> is the fallback when no hash value is present.</p>
                   <div class="grid max-w-md grid-cols-1 gap-3">
                     <div>
                       <label for="field-speechText" class="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">Speech text</label>
@@ -556,11 +499,10 @@
                       autocomplete="off"
                     ></textarea>
                     <div id="wrap-speak-sound-file-upload" class="space-y-2">
-                      <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-700/80 bg-zinc-950/60 px-3 py-2.5">
-                        <div>
-                          <p class="text-sm font-medium text-zinc-200">Managed sound file</p>
-                          <p id="status-sound-file" class="mt-1 text-xs text-zinc-500">Optional: sound.mp3, sound.wav, or similar</p>
-                        </div>
+                      <div class="rounded-lg border border-zinc-700/80 bg-zinc-950/60 px-3 py-2 text-xs leading-relaxed text-zinc-500">
+                        Custom sound uses a fixed file next to <code class="rounded bg-zinc-900 px-1 py-0.5 font-mono text-[11px] text-zinc-300">config.json</code>, e.g. <code class="rounded bg-zinc-900 px-1 py-0.5 font-mono text-[11px] text-zinc-300">sound.mp3</code> or <code class="rounded bg-zinc-900 px-1 py-0.5 font-mono text-[11px] text-zinc-300">sound.wav</code>.
+                      </div>
+                      <div class="flex flex-wrap gap-2">
                         <button type="button" id="btn-upload-sound-file" class="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-700">
                           Upload sound file
                         </button>
@@ -591,13 +533,9 @@
                     <code class="rounded bg-zinc-950 px-1.5 py-0.5 font-mono text-xs text-sky-300/90">default</code>
                     if that is the config you chose to edit.
                   </p>
-                  <div class="mt-4 rounded-lg border border-zinc-700/80 bg-zinc-950/60 p-3">
-                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Recommended workflow</p>
-                    <p class="mt-2 text-sm text-zinc-300">Use <code class="rounded bg-zinc-950 px-1.5 py-0.5 font-mono text-xs text-sky-300/90">output.html</code> in OBS and let Streamer.bot update only the hash fragment.</p>
-                    <code
-                      class="mt-3 block break-all rounded border border-zinc-700/80 bg-black/30 p-2 font-mono text-[11px] text-sky-300/80"
-                    >file:///.../configs/default/output.html#say=Hey%20everyone%20thanks%20for%20watching</code>
-                  </div>
+                  <code
+                    class="mt-3 block break-all rounded border border-zinc-700/80 bg-black/30 p-2 font-mono text-[11px] text-sky-300/80"
+                  >file:///.../configs/default/output.html#say=Hey%20everyone%20thanks%20for%20watching</code>
                 </div>
               </div>
             </div>
@@ -672,7 +610,6 @@
                 Test
               </button>
             </div>
-            <p id="preview-mode-help" class="mt-2 text-xs leading-relaxed text-zinc-500">Settings mode keeps the bubble visible for layout work.</p>
           </div>
           <div id="preview-settings-speak-image-wrap" class="mb-3">
             <div class="flex items-start gap-2 rounded-lg border border-zinc-700/80 bg-zinc-950/60 px-3 py-2.5">
@@ -1167,15 +1104,21 @@
     return t || DEFAULT_CONFIG_NAME;
   }
 
+  function guessConfigNameFromOutputPath() {
+    var path = String(window.location.pathname || '').replace(/\\/g, '/');
+    var parts = path.split('/').filter(Boolean);
+    if (parts.length >= 2) return sanitizeConfigName(parts[parts.length - 2]);
+    return DEFAULT_CONFIG_NAME;
+  }
+
   function buildConfigMeta(name) {
-    var safeName = sanitizeConfigName(name);
-    var folderPath = CONFIGS_ROOT_DIR + '/' + safeName + '/';
-    var assetBaseUrl = new URL(folderPath, getDocumentBaseUrl()).href;
+    var safeName = sanitizeConfigName(name || guessConfigNameFromOutputPath());
+    var assetBaseUrl = new URL('./', getDocumentBaseUrl()).href;
     return {
       name: safeName,
-      folderPath: folderPath,
+      folderPath: './',
       assetBaseUrl: assetBaseUrl,
-      jsonUrl: new URL(folderPath + CONFIG_FILENAME_JSON, getDocumentBaseUrl()).href,
+      jsonUrl: new URL(CONFIG_FILENAME_JSON, getDocumentBaseUrl()).href,
     };
   }
 
@@ -1189,8 +1132,7 @@
   }
 
   function getRequestedConfigName() {
-    var p = new URLSearchParams(window.location.search);
-    return sanitizeConfigName(p.get('config') || DEFAULT_CONFIG_NAME);
+    return guessConfigNameFromOutputPath();
   }
 
   function pickManagedImageSetting(raw, fallbackName) {
@@ -2308,7 +2250,6 @@
   var currentConfigFolderHandle = null;
   var autoSaveTimer = 0;
   var autoSaveSeq = 0;
-  var managedAssetIndicatorSeq = 0;
 
   function isHostedBlackeyeMode() {
     var host = String(window.location.hostname || '').toLowerCase();
@@ -2321,139 +2262,22 @@
 
   function updateProjectRootStatus() {
     var el = $('config-root-status');
-    if (el) {
-      if (currentProjectRootHandle) el.textContent = 'Selected project folder: ' + currentProjectRootHandle.name;
-      else if (canUseLocalFolderAccess()) el.textContent = 'No project folder selected.';
-      else el.textContent = 'This browser cannot open local folders directly.';
-    }
-    updateEditorHeaderMeta();
+    if (!el) return;
+    if (currentProjectRootHandle) el.textContent = 'Selected project folder: ' + currentProjectRootHandle.name;
+    else if (canUseLocalFolderAccess()) el.textContent = 'No project folder selected.';
+    else el.textContent = 'This browser cannot open local folders directly.';
   }
 
   function updateConfigFolderStatus() {
     var el = $('config-folder-status');
-    if (el) {
-      if (currentConfigFolderHandle) {
-        el.textContent = 'Selected folder: ' + currentConfigFolderHandle.name;
-      } else if (canUseLocalFolderAccess()) {
-        el.textContent = 'No config folder selected.';
-      } else {
-        el.textContent = 'This browser cannot write directly to the config folder.';
-      }
-    }
-    updateEditorHeaderMeta();
-    updateManagedAssetIndicators();
-  }
-
-  function openStartupDialog(forceOpen) {
-    if (isHostedBlackeyeMode()) return;
-    var dlg = $('dialog-config-start');
-    if (!dlg || typeof dlg.showModal !== 'function') return;
-    if (dlg.open) return;
-    if (!forceOpen && (currentConfigsRootHandle || currentConfigFolderHandle)) return;
-    document.body.classList.add('startup-dialog-open');
-    var layout = $('desktop-layout');
-    if (layout) layout.setAttribute('inert', '');
-    dlg.showModal();
-    updateProjectRootStatus();
-    if (currentConfigsRootHandle) {
-      listAvailableConfigNames().then(renderConfigList);
-    }
-  }
-
-  function setHeaderText(id, text, fallbackClass) {
-    var el = $(id);
     if (!el) return;
-    el.textContent = text;
-    if (fallbackClass) {
-      el.classList.toggle(fallbackClass, !text || /No .* selected/i.test(text));
+    if (currentConfigFolderHandle) {
+      el.textContent = 'Selected folder: ' + currentConfigFolderHandle.name;
+    } else if (canUseLocalFolderAccess()) {
+      el.textContent = 'No config folder selected.';
+    } else {
+      el.textContent = 'This browser cannot write directly to the config folder.';
     }
-  }
-
-  function updateEditorHeaderMeta() {
-    setHeaderText('editor-config-name', currentConfigMeta && currentConfigMeta.name ? currentConfigMeta.name : CompanionConfig.DEFAULT_CONFIG_NAME);
-    setHeaderText('editor-project-name', currentProjectRootHandle ? currentProjectRootHandle.name : 'No folder selected', 'text-zinc-500');
-  }
-
-  function setAutoSaveState(label, tone, detail) {
-    var chip = $('editor-save-state');
-    var detailEl = $('editor-save-detail');
-    if (chip) {
-      chip.textContent = label || 'Waiting';
-      chip.className = 'rounded-full border px-2.5 py-1 text-[11px] font-medium ';
-      if (tone === 'error') {
-        chip.className += 'border-red-500/40 bg-red-500/10 text-red-300';
-      } else if (tone === 'saving') {
-        chip.className += 'border-amber-500/40 bg-amber-500/10 text-amber-300';
-      } else if (tone === 'success') {
-        chip.className += 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300';
-      } else {
-        chip.className += 'border-zinc-700 bg-zinc-900 text-zinc-300';
-      }
-    }
-    if (detailEl && detail) detailEl.textContent = detail;
-  }
-
-  function setManagedAssetIndicator(id, message, tone) {
-    var el = $(id);
-    if (!el) return;
-    el.textContent = message;
-    el.classList.remove('text-zinc-500', 'text-emerald-400', 'text-amber-400', 'text-red-400');
-    if (tone === 'success') el.classList.add('text-emerald-400');
-    else if (tone === 'warning') el.classList.add('text-amber-400');
-    else if (tone === 'error') el.classList.add('text-red-400');
-    else el.classList.add('text-zinc-500');
-  }
-
-  function checkFileExists(dirHandle, filename) {
-    if (!dirHandle) return Promise.resolve(false);
-    return dirHandle.getFileHandle(filename).then(
-      function () { return true; },
-      function () { return false; }
-    );
-  }
-
-  function findManagedSoundFile(dirHandle, index) {
-    index = index || 0;
-    if (!dirHandle) return Promise.resolve('');
-    if (index >= MANAGED_SOUND_EXTENSIONS.length) return Promise.resolve('');
-    var candidate = buildManagedSoundFilename(MANAGED_SOUND_EXTENSIONS[index]);
-    return checkFileExists(dirHandle, candidate).then(function (exists) {
-      if (exists) return candidate;
-      return findManagedSoundFile(dirHandle, index + 1);
-    });
-  }
-
-  function updateManagedAssetIndicators() {
-    var seq = ++managedAssetIndicatorSeq;
-    var configName = currentConfigMeta && currentConfigMeta.name ? currentConfigMeta.name : CompanionConfig.DEFAULT_CONFIG_NAME;
-    if (!currentConfigFolderHandle) {
-      setManagedAssetIndicator('status-idle-image', 'Expected at configs/' + configName + '/idle.png', 'default');
-      setManagedAssetIndicator('status-talk-image', 'Expected at configs/' + configName + '/talk.png', 'default');
-      setManagedAssetIndicator('status-sound-file', 'Optional managed sound file next to config.json.', 'default');
-      return;
-    }
-    Promise.all([
-      checkFileExists(currentConfigFolderHandle, STANDARD_IDLE_IMAGE_FILE),
-      checkFileExists(currentConfigFolderHandle, STANDARD_TALK_IMAGE_FILE),
-      findManagedSoundFile(currentConfigFolderHandle),
-    ]).then(function (result) {
-      if (seq !== managedAssetIndicatorSeq) return;
-      setManagedAssetIndicator(
-        'status-idle-image',
-        result[0] ? 'Loaded from ' + currentConfigFolderHandle.name + '/idle.png' : 'Missing ' + currentConfigFolderHandle.name + '/idle.png',
-        result[0] ? 'success' : 'warning'
-      );
-      setManagedAssetIndicator(
-        'status-talk-image',
-        result[1] ? 'Loaded from ' + currentConfigFolderHandle.name + '/talk.png' : 'Missing ' + currentConfigFolderHandle.name + '/talk.png',
-        result[1] ? 'success' : 'warning'
-      );
-      setManagedAssetIndicator(
-        'status-sound-file',
-        result[2] ? 'Loaded ' + currentConfigFolderHandle.name + '/' + result[2] : 'Optional: sound.mp3, sound.wav, or similar',
-        result[2] ? 'success' : 'default'
-      );
-    });
   }
 
   function isConfigFolderNameAllowed(name) {
@@ -2577,11 +2401,7 @@
         });
       });
     }).then(function () {
-      setAutoSaveState('Saved', 'success', 'Changes were written to ' + currentConfigFolderHandle.name + '/config.json.');
       return true;
-    }).catch(function (err) {
-      setAutoSaveState('Save error', 'error', err && err.message ? err.message : 'Could not write config.json.');
-      throw err;
     });
   }
 
@@ -2595,7 +2415,6 @@
     var issues = collectValidationIssues(readForm());
     if (issues.errors.length) return;
     var seq = ++autoSaveSeq;
-    setAutoSaveState('Saving...', 'saving', 'Writing changes into the current config folder.');
     autoSaveTimer = window.setTimeout(function () {
       autoSaveTimer = 0;
       saveConfigJsonToCurrentFolder(readForm()).catch(function (err) {
@@ -2652,7 +2471,6 @@
         history.replaceState(null, '', window.location.pathname + '?' + CompanionConfig.buildConfigEditorQuery(settings));
         setBuiltUrlValue(CompanionConfig.buildPlayUrl(readForm()));
         setStatus('Loaded named config "' + configName + '".', 'success');
-        setAutoSaveState('Saved', 'success', 'Editing ' + configName + '/config.json.');
         closeStartupDialog();
         var form = $('config-form');
         if (form) form.dispatchEvent(new Event('input', { bubbles: true }));
@@ -2710,8 +2528,6 @@
     }
     if (saveBtn) saveBtn.disabled = false;
     if (saveAsBtn) saveAsBtn.disabled = false;
-    updateEditorHeaderMeta();
-    updateManagedAssetIndicators();
   }
 
   function syncSpeakSoundCustomVisibility() {
@@ -2729,16 +2545,11 @@
       imageUrlSpeak: '',
       mirroring: $('field-mirroring').checked,
       scale: scaleValue,
-      idleImageRotateX: clampImageRotateDeg(parseFloat($('field-idle-imageRotateX').value)),
-      idleImageRotateY: clampImageRotateDeg(parseFloat($('field-idle-imageRotateY').value)),
-      idleImageRotateZ: clampImageRotateDeg(parseFloat($('field-idle-imageRotateZ').value)),
-      idleImageShadowOpacity: clampImageShadowOpacity(parseFloat($('field-idle-imageShadowOpacity').value)),
-      idleImageShadowDepth: clampImageShadowDepth(parseFloat($('field-idle-imageShadowDepth').value)),
-      talkImageRotateX: clampImageRotateDeg(parseFloat($('field-talk-imageRotateX').value)),
-      talkImageRotateY: clampImageRotateDeg(parseFloat($('field-talk-imageRotateY').value)),
-      talkImageRotateZ: clampImageRotateDeg(parseFloat($('field-talk-imageRotateZ').value)),
-      talkImageShadowOpacity: clampImageShadowOpacity(parseFloat($('field-talk-imageShadowOpacity').value)),
-      talkImageShadowDepth: clampImageShadowDepth(parseFloat($('field-talk-imageShadowDepth').value)),
+      imageRotateX: clampImageRotateDeg(parseFloat($('field-imageRotateX').value)),
+      imageRotateY: clampImageRotateDeg(parseFloat($('field-imageRotateY').value)),
+      imageRotateZ: clampImageRotateDeg(parseFloat($('field-imageRotateZ').value)),
+      imageShadowOpacity: clampImageShadowOpacity(parseFloat($('field-imageShadowOpacity').value)),
+      imageShadowDepth: clampImageShadowDepth(parseFloat($('field-imageShadowDepth').value)),
       animation: $('field-animation').value,
       animationDuration: parseFloat($('field-animationDuration').value) || CompanionConfig.DEFAULTS.animationDuration,
       speechText: $('field-speechText').value,
@@ -2766,7 +2577,6 @@
         return clampSpeechBubbleSizePx(Number.isFinite(n) ? n : CompanionConfig.DEFAULTS.speechBubbleMinWidth);
       })(),
       autoHideSpeech: $('field-autoHideSpeech').checked,
-      useTalkImageForTrigger: $('field-useTalkImageForTrigger').checked,
       triggerIn: $('field-triggerIn').value,
       triggerOut: $('field-triggerOut').value,
       triggerDuration: (function () {
@@ -2829,18 +2639,14 @@
     display.textContent = Math.round(value) + ' px';
   }
 
-  function getImagePoseFieldMap(mode) {
-    return [
-      ['field-' + mode + '-imageRotateX', 'field-' + mode + '-imageRotateX-display', 'deg'],
-      ['field-' + mode + '-imageRotateY', 'field-' + mode + '-imageRotateY-display', 'deg'],
-      ['field-' + mode + '-imageRotateZ', 'field-' + mode + '-imageRotateZ-display', 'deg'],
-      ['field-' + mode + '-imageShadowOpacity', 'field-' + mode + '-imageShadowOpacity-display', 'pct'],
-      ['field-' + mode + '-imageShadowDepth', 'field-' + mode + '-imageShadowDepth-display', 'px'],
+  function updateImagePoseDisplays() {
+    var map = [
+      ['field-imageRotateX', 'field-imageRotateX-display', 'deg'],
+      ['field-imageRotateY', 'field-imageRotateY-display', 'deg'],
+      ['field-imageRotateZ', 'field-imageRotateZ-display', 'deg'],
+      ['field-imageShadowOpacity', 'field-imageShadowOpacity-display', 'pct'],
+      ['field-imageShadowDepth', 'field-imageShadowDepth-display', 'px'],
     ];
-  }
-
-  function updateImagePoseDisplays(mode) {
-    var map = getImagePoseFieldMap(mode);
     map.forEach(function (item) {
       var input = $(item[0]);
       var output = $(item[1]);
@@ -2855,55 +2661,36 @@
 
   var imagePoseDragActive = false;
   var imagePoseDragStart = null;
-  var currentImageEditorMode = 'idle';
 
-  function refreshImagePosePreview(mode) {
-    var preview = $('image-pose-preview-image-' + mode);
+  function refreshImagePosePreview() {
+    var preview = $('image-pose-preview-image');
     if (!preview) return;
     var settings = readForm();
-    var src = resolveManagedCompanionImage(settings, mode === 'talk' ? 'speak' : 'idle');
-    var pose = getImagePoseSettings(settings, mode);
+    var src = resolveManagedCompanionImage(settings, 'idle');
     preview.src = src;
     preview.style.transform =
       'perspective(560px) ' +
-      'rotateX(' + pose.rotateX + 'deg) ' +
-      'rotateY(' + pose.rotateY + 'deg) ' +
-      'rotateZ(' + pose.rotateZ + 'deg)';
+      'rotateX(' + clampImageRotateDeg(Number(settings.imageRotateX)) + 'deg) ' +
+      'rotateY(' + clampImageRotateDeg(Number(settings.imageRotateY)) + 'deg) ' +
+      'rotateZ(' + clampImageRotateDeg(Number(settings.imageRotateZ)) + 'deg)';
     preview.style.filter = joinFilterParts([
-      buildImageShadowFilter(pose.shadowDepth, pose.shadowOpacity),
+      buildImageShadowFilter(Number(settings.imageShadowDepth), Number(settings.imageShadowOpacity)),
     ]);
-    var dot = $('image-pose-dot-' + mode);
+    var dot = $('image-pose-dot');
     if (dot) {
-      dot.style.left = String(50 + (pose.rotateY / 45) * 34) + '%';
-      dot.style.top = String(50 - (pose.rotateX / 45) * 34) + '%';
+      dot.style.left = String(50 + (clampImageRotateDeg(Number(settings.imageRotateY)) / 45) * 34) + '%';
+      dot.style.top = String(50 - (clampImageRotateDeg(Number(settings.imageRotateX)) / 45) * 34) + '%';
     }
   }
 
-  function resetImagePoseFields(mode) {
-    if ($('field-' + mode + '-imageRotateX')) $('field-' + mode + '-imageRotateX').value = '0';
-    if ($('field-' + mode + '-imageRotateY')) $('field-' + mode + '-imageRotateY').value = '0';
-    if ($('field-' + mode + '-imageRotateZ')) $('field-' + mode + '-imageRotateZ').value = '0';
-    if ($('field-' + mode + '-imageShadowOpacity')) $('field-' + mode + '-imageShadowOpacity').value = String(DEFAULTS[mode + 'ImageShadowOpacity']);
-    if ($('field-' + mode + '-imageShadowDepth')) $('field-' + mode + '-imageShadowDepth').value = String(DEFAULTS[mode + 'ImageShadowDepth']);
-    updateImagePoseDisplays(mode);
-    refreshImagePosePreview(mode);
-  }
-
-  function syncImageEditorTabUi(mode) {
-    currentImageEditorMode = mode === 'talk' ? 'talk' : 'idle';
-    ['idle', 'talk'].forEach(function (name) {
-      var btn = $('btn-image-editor-tab-' + name);
-      var panel = $('panel-image-editor-' + name);
-      var active = name === currentImageEditorMode;
-      if (btn) {
-        btn.setAttribute('aria-selected', active ? 'true' : 'false');
-        btn.tabIndex = active ? 0 : -1;
-        btn.className =
-          'rounded-lg px-3 py-2 text-sm font-medium transition-colors ' +
-          (active ? 'bg-sky-500/20 text-sky-200 ring-1 ring-sky-500/30' : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200');
-      }
-      if (panel) panel.hidden = !active;
-    });
+  function resetImagePoseFields() {
+    if ($('field-imageRotateX')) $('field-imageRotateX').value = '0';
+    if ($('field-imageRotateY')) $('field-imageRotateY').value = '0';
+    if ($('field-imageRotateZ')) $('field-imageRotateZ').value = '0';
+    if ($('field-imageShadowOpacity')) $('field-imageShadowOpacity').value = String(DEFAULTS.imageShadowOpacity);
+    if ($('field-imageShadowDepth')) $('field-imageShadowDepth').value = String(DEFAULTS.imageShadowDepth);
+    updateImagePoseDisplays();
+    refreshImagePosePreview();
   }
 
   function writeForm(settings) {
@@ -2923,15 +2710,12 @@
       Math.round((Number(settings.scale) > 0 ? Number(settings.scale) : CompanionConfig.DEFAULTS.scale) * IMG_LAYOUT_SIZE)
     );
     updateScaleDisplay();
-    ['idle', 'talk'].forEach(function (mode) {
-      if ($('field-' + mode + '-imageRotateX')) $('field-' + mode + '-imageRotateX').value = String(clampImageRotateDeg(Number(settings[mode + 'ImageRotateX'])));
-      if ($('field-' + mode + '-imageRotateY')) $('field-' + mode + '-imageRotateY').value = String(clampImageRotateDeg(Number(settings[mode + 'ImageRotateY'])));
-      if ($('field-' + mode + '-imageRotateZ')) $('field-' + mode + '-imageRotateZ').value = String(clampImageRotateDeg(Number(settings[mode + 'ImageRotateZ'])));
-      if ($('field-' + mode + '-imageShadowOpacity')) $('field-' + mode + '-imageShadowOpacity').value = String(clampImageShadowOpacity(Number(settings[mode + 'ImageShadowOpacity'])));
-      if ($('field-' + mode + '-imageShadowDepth')) $('field-' + mode + '-imageShadowDepth').value = String(clampImageShadowDepth(Number(settings[mode + 'ImageShadowDepth'])));
-      updateImagePoseDisplays(mode);
-      refreshImagePosePreview(mode);
-    });
+    if ($('field-imageRotateX')) $('field-imageRotateX').value = String(clampImageRotateDeg(Number(settings.imageRotateX)));
+    if ($('field-imageRotateY')) $('field-imageRotateY').value = String(clampImageRotateDeg(Number(settings.imageRotateY)));
+    if ($('field-imageRotateZ')) $('field-imageRotateZ').value = String(clampImageRotateDeg(Number(settings.imageRotateZ)));
+    if ($('field-imageShadowOpacity')) $('field-imageShadowOpacity').value = String(clampImageShadowOpacity(Number(settings.imageShadowOpacity)));
+    if ($('field-imageShadowDepth')) $('field-imageShadowDepth').value = String(clampImageShadowDepth(Number(settings.imageShadowDepth)));
+    updateImagePoseDisplays();
     $('field-animation').value = settings.animation;
     $('field-animationDuration').value = String(settings.animationDuration);
     $('field-speechText').value = settings.speechText;
@@ -2954,8 +2738,6 @@
       );
     }
     $('field-autoHideSpeech').checked = !!settings.autoHideSpeech;
-    $('field-useTalkImageForTrigger').checked =
-      settings.useTalkImageForTrigger != null ? !!settings.useTalkImageForTrigger : CompanionConfig.DEFAULTS.useTalkImageForTrigger;
     $('field-triggerIn').value = settings.triggerIn;
     $('field-triggerOut').value = settings.triggerOut;
     $('field-triggerDuration').value = String(settings.triggerDuration);
@@ -2974,9 +2756,8 @@
         settings.speakSoundFile != null ? String(settings.speakSoundFile) : CompanionConfig.DEFAULTS.speakSoundFile;
     }
     syncSpeakSoundCustomVisibility();
-    syncImageEditorTabUi(currentImageEditorMode);
+    refreshImagePosePreview();
     updateConfigNameUi();
-    updateManagedAssetIndicators();
   }
 
   function fillSelectOptions(selectId, values, labelMap) {
@@ -3225,8 +3006,7 @@
         CompanionOverlay.setSpeechVisible(root, false);
       }
       syncSpeakSoundCustomVisibility();
-      refreshImagePosePreview('idle');
-      refreshImagePosePreview('talk');
+      refreshImagePosePreview();
       syncConfigUrlFromForm();
       refreshValidationState({ showStatus: false });
       scheduleAutoSave();
@@ -3429,23 +3209,12 @@
     if (boot && typeof boot === 'object') {
       return Promise.resolve(CompanionConfig.attachConfigMeta(Object.assign({}, CompanionConfig.DEFAULTS, boot), currentConfigMeta));
     }
-    var params = new URLSearchParams(window.location.search);
-    var requestedConfig = params.get('config');
-    if (requestedConfig || !params.toString()) {
-      return CompanionConfig.loadNamedConfig(requestedConfig || CompanionConfig.DEFAULT_CONFIG_NAME).catch(function () {
-        if (requestedConfig) {
-          setStatus('Could not load config "' + CompanionConfig.sanitizeConfigName(requestedConfig) + '". Using default config.', 'warning');
-        }
-        return CompanionConfig.loadNamedConfig(CompanionConfig.DEFAULT_CONFIG_NAME).catch(function () {
-          return CompanionConfig.attachConfigMeta(CompanionConfig.DEFAULTS, CompanionConfig.buildConfigMeta(CompanionConfig.DEFAULT_CONFIG_NAME));
-        });
-      });
-    }
-    var hasSayInHash = CompanionConfig.parseSpeechTextFromHash() !== null;
-    if (params.toString() || hasSayInHash) {
-      return Promise.resolve(CompanionConfig.attachConfigMeta(CompanionConfig.parseFromLocation(), currentConfigMeta));
-    }
-    return Promise.resolve(CompanionConfig.attachConfigMeta(CompanionConfig.DEFAULTS, CompanionConfig.buildConfigMeta(CompanionConfig.DEFAULT_CONFIG_NAME)));
+    return CompanionConfig.loadNamedConfig(guessConfigNameFromOutputPath()).catch(function () {
+      return CompanionConfig.attachConfigMeta(
+        mergeSpeechFromHash(CompanionConfig.DEFAULTS),
+        CompanionConfig.buildConfigMeta(guessConfigNameFromOutputPath())
+      );
+    });
   }
 
   function setOverlayLayoutConfig(root) {
@@ -3521,7 +3290,15 @@
   }
 
   function maybeShowStartupDialog() {
-    openStartupDialog(false);
+    if (isHostedBlackeyeMode()) return;
+    var dlg = $('dialog-config-start');
+    if (!dlg || typeof dlg.showModal !== 'function') return;
+    if (currentConfigsRootHandle || currentConfigFolderHandle) return;
+    document.body.classList.add('startup-dialog-open');
+    var layout = $('desktop-layout');
+    if (layout) layout.setAttribute('inert', '');
+    dlg.showModal();
+    updateProjectRootStatus();
   }
 
   function closeStartupDialog() {
@@ -3553,21 +3330,14 @@
       var bTest = $('btn-preview-mode-test');
       var triggerWrap = $('preview-trigger-test-wrap');
       var settingsSpeakWrap = $('preview-settings-speak-image-wrap');
-      var help = $('preview-mode-help');
       if (triggerWrap) {
         triggerWrap.classList.toggle('hidden', mode !== 'test');
       }
       if (settingsSpeakWrap) {
         settingsSpeakWrap.classList.toggle('hidden', mode !== 'settings');
       }
-      if (help) {
-        help.textContent =
-          mode === 'test'
-            ? 'Test mode hides the bubble until you trigger the live animation.'
-            : 'Settings mode keeps the bubble visible for layout work.';
-      }
       if (!bSettings || !bTest) return;
-      var active = 'bg-sky-500/20 text-sky-200 ring-1 ring-sky-500/30';
+      var active = 'bg-zinc-700 text-white';
       var inactive = 'text-zinc-400 hover:text-zinc-200';
       bSettings.setAttribute('aria-pressed', mode === 'settings' ? 'true' : 'false');
       bTest.setAttribute('aria-pressed', mode === 'test' ? 'true' : 'false');
@@ -3636,29 +3406,8 @@
       updateConfigFolderStatus();
       updateProjectRootStatus();
       updateConfigNameUi();
-      setAutoSaveState(currentConfigFolderHandle ? 'Saved' : 'Waiting', currentConfigFolderHandle ? 'success' : 'default', currentConfigFolderHandle ? 'Editing the currently open config.' : 'Select a project folder and open a config to start autosaving.');
       maybeShowStartupDialog();
 
-      var btnEditorSelectFolder = $('btn-editor-select-folder');
-      if (btnEditorSelectFolder) {
-        btnEditorSelectFolder.addEventListener('click', function () {
-          pickProjectRootHandle().then(
-            function () {
-              setStatus('Project folder selected.', 'success');
-              setAutoSaveState('Waiting', 'default', 'Open or create a config to start editing.');
-            },
-            function (err) {
-              setStatus(err && err.message ? err.message : 'Could not select project folder.', 'error');
-            }
-          );
-        });
-      }
-      var btnEditorOpenConfig = $('btn-editor-open-config');
-      if (btnEditorOpenConfig) {
-        btnEditorOpenConfig.addEventListener('click', function () {
-          openStartupDialog(true);
-        });
-      }
       var btnStartPickRoot = $('btn-start-pick-root');
       var dlgConfigStart = $('dialog-config-start');
       if (dlgConfigStart) {
@@ -3681,7 +3430,6 @@
           pickProjectRootHandle().then(
             function () {
               setStatus('Project folder selected.', 'success');
-              setAutoSaveState('Waiting', 'default', 'Open an existing config or create a new one.');
             },
             function (err) {
               setStatus(err && err.message ? err.message : 'Could not select project folder.', 'error');
@@ -3730,7 +3478,6 @@
             function () {
               $('field-imageUrl').value = '';
               setStatus('idle.png saved to the selected config folder.', 'success');
-              updateManagedAssetIndicators();
               var form = $('config-form');
               if (form) form.dispatchEvent(new Event('input', { bubbles: true }));
             },
@@ -3761,7 +3508,6 @@
             function () {
               $('field-imageUrlSpeak').value = '';
               setStatus('talk.png saved to the selected config folder.', 'success');
-              updateManagedAssetIndicators();
               var form = $('config-form');
               if (form) form.dispatchEvent(new Event('input', { bubbles: true }));
             },
@@ -3793,7 +3539,6 @@
             function () {
               $('field-speakSoundFile').value = '';
               setStatus(buildManagedSoundFilename(ext) + ' saved to the selected config folder.', 'success');
-              updateManagedAssetIndicators();
               var form = $('config-form');
               if (form) form.dispatchEvent(new Event('input', { bubbles: true }));
             },
@@ -3811,70 +3556,58 @@
         scaleEl.addEventListener('input', updateScaleDisplay);
         scaleEl.addEventListener('change', updateScaleDisplay);
       }
-      ['idle', 'talk'].forEach(function (mode) {
-        getImagePoseFieldMap(mode).forEach(function (item) {
-          var el = $(item[0]);
-          if (!el) return;
-          el.addEventListener('input', function () {
-            updateImagePoseDisplays(mode);
-            refreshImagePosePreview(mode);
-          });
-          el.addEventListener('change', function () {
-            updateImagePoseDisplays(mode);
-            refreshImagePosePreview(mode);
-          });
+      ['field-imageRotateX', 'field-imageRotateY', 'field-imageRotateZ', 'field-imageShadowOpacity', 'field-imageShadowDepth'].forEach(function (id) {
+        var el = $(id);
+        if (!el) return;
+        el.addEventListener('input', function () {
+          updateImagePoseDisplays();
+          refreshImagePosePreview();
         });
-        var resetBtn = $('btn-reset-image-pose-' + mode);
-        if (resetBtn) {
-          resetBtn.addEventListener('click', function () {
-            resetImagePoseFields(mode);
-            var form = $('config-form');
-            if (form) form.dispatchEvent(new Event('input', { bubbles: true }));
-          });
-        }
-        var preview = $('image-pose-preview-' + mode);
-        if (preview) {
-          preview.addEventListener('pointerdown', function (ev) {
-            currentImageEditorMode = mode;
-            imagePoseDragActive = true;
-            imagePoseDragStart = {
-              mode: mode,
-              x: ev.clientX,
-              y: ev.clientY,
-              tiltX: clampImageRotateDeg(parseFloat($('field-' + mode + '-imageRotateX').value)),
-              tiltY: clampImageRotateDeg(parseFloat($('field-' + mode + '-imageRotateY').value)),
-            };
-            preview.setPointerCapture && preview.setPointerCapture(ev.pointerId);
-          });
-          preview.addEventListener('pointermove', function (ev) {
-            if (!imagePoseDragActive || !imagePoseDragStart || imagePoseDragStart.mode !== mode) return;
-            $('field-' + mode + '-imageRotateY').value = String(clampImageRotateDeg(imagePoseDragStart.tiltY + (ev.clientX - imagePoseDragStart.x) * 0.35));
-            $('field-' + mode + '-imageRotateX').value = String(clampImageRotateDeg(imagePoseDragStart.tiltX - (ev.clientY - imagePoseDragStart.y) * 0.35));
-            updateImagePoseDisplays(mode);
-            refreshImagePosePreview(mode);
-            var form = $('config-form');
-            if (form) form.dispatchEvent(new Event('input', { bubbles: true }));
-          });
-          function endImagePoseDrag(ev) {
-            if (ev && preview.hasPointerCapture && preview.hasPointerCapture(ev.pointerId)) {
-              preview.releasePointerCapture(ev.pointerId);
-            }
-            imagePoseDragActive = false;
-            imagePoseDragStart = null;
+        el.addEventListener('change', function () {
+          updateImagePoseDisplays();
+          refreshImagePosePreview();
+        });
+      });
+      var btnResetImagePose = $('btn-reset-image-pose');
+      if (btnResetImagePose) {
+        btnResetImagePose.addEventListener('click', function () {
+          resetImagePoseFields();
+          var form = $('config-form');
+          if (form) form.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+      }
+      var imagePosePreview = $('image-pose-preview');
+      if (imagePosePreview) {
+        imagePosePreview.addEventListener('pointerdown', function (ev) {
+          imagePoseDragActive = true;
+          imagePoseDragStart = {
+            x: ev.clientX,
+            y: ev.clientY,
+            tiltX: clampImageRotateDeg(parseFloat($('field-imageRotateX').value)),
+            tiltY: clampImageRotateDeg(parseFloat($('field-imageRotateY').value)),
+          };
+          imagePosePreview.setPointerCapture && imagePosePreview.setPointerCapture(ev.pointerId);
+        });
+        imagePosePreview.addEventListener('pointermove', function (ev) {
+          if (!imagePoseDragActive || !imagePoseDragStart) return;
+          $('field-imageRotateY').value = String(clampImageRotateDeg(imagePoseDragStart.tiltY + (ev.clientX - imagePoseDragStart.x) * 0.35));
+          $('field-imageRotateX').value = String(clampImageRotateDeg(imagePoseDragStart.tiltX - (ev.clientY - imagePoseDragStart.y) * 0.35));
+          updateImagePoseDisplays();
+          refreshImagePosePreview();
+          var form = $('config-form');
+          if (form) form.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        function endImagePoseDrag(ev) {
+          if (ev && imagePosePreview.hasPointerCapture && imagePosePreview.hasPointerCapture(ev.pointerId)) {
+            imagePosePreview.releasePointerCapture(ev.pointerId);
           }
-          preview.addEventListener('pointerup', endImagePoseDrag);
-          preview.addEventListener('pointercancel', endImagePoseDrag);
-          preview.addEventListener('pointerleave', endImagePoseDrag);
+          imagePoseDragActive = false;
+          imagePoseDragStart = null;
         }
-      });
-      ['idle', 'talk'].forEach(function (mode) {
-        var btn = $('btn-image-editor-tab-' + mode);
-        if (!btn) return;
-        btn.addEventListener('click', function () {
-          syncImageEditorTabUi(mode);
-          refreshImagePosePreview(mode);
-        });
-      });
+        imagePosePreview.addEventListener('pointerup', endImagePoseDrag);
+        imagePosePreview.addEventListener('pointercancel', endImagePoseDrag);
+        imagePosePreview.addEventListener('pointerleave', endImagePoseDrag);
+      }
 
       var previewTestSeq = 0;
       var btnPreviewTest = $('btn-preview-test');
@@ -3947,6 +3680,47 @@
   }
 
   // ——— Boot ———
+  function runPlayMode() {
+    var layout = document.getElementById('desktop-layout');
+    if (layout) {
+      layout.hidden = true;
+      layout.setAttribute('aria-hidden', 'true');
+    }
+
+    document.documentElement.classList.add('h-full', 'play-mode');
+    document.body.classList.add('play-mode');
+
+    var root = document.getElementById('companion-overlay');
+    if (!root) return;
+
+    if (root.parentElement !== document.body) {
+      document.body.appendChild(root);
+    }
+
+    root.hidden = false;
+    root.setAttribute('data-play-mode', '1');
+    root.className =
+      'pointer-events-none fixed bottom-[8%] left-1/2 flex w-auto -translate-x-1/2 flex-col items-center justify-end pb-[8%] [container-type:inline-size]';
+
+    document.body.className = 'min-h-full h-full overflow-hidden antialiased play-mode';
+    return getInitialSettings().then(function (settings) {
+      CompanionOverlay.applySettings(root, settings);
+
+      var controller = CompanionAnimations.createController({
+        root: root,
+        getSettings: function () {
+          return settings;
+        },
+      });
+
+      controller.start();
+      controller.bootstrap();
+
+      document.addEventListener('keydown', controller.onKeyDown);
+      window.__companionController = controller;
+    });
+  }
+
   function runConfigMode() {
     document.documentElement.classList.remove('play-mode');
     document.body.classList.remove('play-mode');
@@ -3978,18 +3752,13 @@
       return Promise.resolve();
     }
 
-    var hosted = $('hosted-download-screen');
-    if (hosted) hosted.hidden = true;
-
     return init(root);
   }
 
   function boot() {
-    var task = runConfigMode();
+    var task = runPlayMode();
     if (task && typeof task.catch === 'function') {
-      task.catch(function (err) {
-        setStatus(err && err.message ? err.message : 'Startup failed.', 'error');
-      });
+      task.catch(function () {});
     }
   }
 
