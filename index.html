@@ -612,7 +612,8 @@
     speechText ??= "";
 
     long refreshKey = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-    string url = baseUrl + "?refresh=" + refreshKey + "#say=" + CPH.UrlEncode(speechText);
+    string encodedSpeech = CPH.UrlEncode(speechText);
+    string url = baseUrl + "?refresh=" + refreshKey + "&say=" + encodedSpeech + "#say=" + encodedSpeech;
     CPH.ObsSetBrowserSource(scene, source, url);
     return true;
 }</code></pre>
@@ -896,6 +897,7 @@
   var NONSPEAK_OPTIONS = ['none', 'grunt', 'bob', 'squash'];
   /** During speak loop (after pre-speak): Web Audio, optional */
   var SPEAK_SOUND_OPTIONS = ['none', 'banjo', 'sims', 'wah', 'blip', 'chatter', 'custom'];
+  var SPEECH_TEXT_BLACKLIST = [];
   var SPEAK_SOUND_LABELS = {
     none: 'Off',
     banjo: 'Mumble (Banjo-Kazooie style)',
@@ -1041,6 +1043,20 @@
     return ok.indexOf(pos) >= 0 ? pos : DEFAULTS.speechPosition;
   }
 
+  function escapeRegExp(raw) {
+    return String(raw).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function sanitizeSpeechText(raw) {
+    var text = String(raw == null ? '' : raw).replace(/\+/g, ' ');
+    SPEECH_TEXT_BLACKLIST.forEach(function (term) {
+      var safeTerm = String(term == null ? '' : term).trim();
+      if (!safeTerm) return;
+      text = text.replace(new RegExp(escapeRegExp(safeTerm), 'gi'), '');
+    });
+    return text.replace(/\s+/g, ' ').trim();
+  }
+
   function clampPush(raw, fallback) {
     var name = raw != null && String(raw) !== '' ? String(raw) : fallback;
     return PUSH_OPTIONS.indexOf(name) >= 0 ? name : fallback;
@@ -1108,7 +1124,7 @@
       talkImageShadowDepth: readPoseParam(get, 'talkImageShadowDepth', 'imageShadowDepth', DEFAULTS.talkImageShadowDepth, 'depth'),
       animation: clampAnimation(get('animation') || DEFAULTS.animation),
       animationDuration: parseNum(get('animationDuration'), DEFAULTS.animationDuration),
-      speechText: options.includeSpeechText && get('speechText') != null ? get('speechText') : DEFAULTS.speechText,
+      speechText: options.includeSpeechText && get('speechText') != null ? sanitizeSpeechText(get('speechText')) : DEFAULTS.speechText,
       speechDuration: parseNum(get('speechDuration'), DEFAULTS.speechDuration),
       speechPosition: clampPosition(get('speechPosition') || DEFAULTS.speechPosition),
       speechOffsetX: clampSpeechOffset(parseNum(get('speechOffsetX'), DEFAULTS.speechOffsetX)),
@@ -1151,19 +1167,24 @@
     }
   }
 
-  /** Speech text from the current page hash (`#say=…` only). Generated URLs put speech here, not in the query. */
-  function parseSpeechTextFromHash() {
-    return decodeSayFragmentValue(window.location.hash);
+  /** Speech text from the current page location. `#say=` wins; query supports `say` and `speechText` as fallbacks. */
+  function parseSpeechTextFromLocation() {
+    var fromHash = decodeSayFragmentValue(window.location.hash);
+    if (fromHash !== null) return fromHash;
+    var sp = new URLSearchParams(window.location.search);
+    if (sp.has('say')) return decodeParamValue(sp.get('say'));
+    if (sp.has('speechText')) return decodeParamValue(sp.get('speechText'));
+    return null;
   }
 
   function mergeSpeechFromHash(parsed) {
-    var fromHash = parseSpeechTextFromHash();
-    if (fromHash === null) return parsed;
+    var fromLocation = parseSpeechTextFromLocation();
+    if (fromLocation === null) return parsed;
     var out = {};
     for (var k in parsed) {
       if (Object.prototype.hasOwnProperty.call(parsed, k)) out[k] = parsed[k];
     }
-    out.speechText = String(fromHash);
+    out.speechText = sanitizeSpeechText(fromLocation);
     return out;
   }
 
@@ -1349,7 +1370,7 @@
     p.set('talkImageShadowDepth', String(clampImageShadowDepth(parseNum(safe.talkImageShadowDepth != null ? safe.talkImageShadowDepth : safe.imageShadowDepth, DEFAULTS.talkImageShadowDepth))));
     p.set('animation', clampAnimation(safe.animation || DEFAULTS.animation));
     p.set('animationDuration', String(parseNum(safe.animationDuration, DEFAULTS.animationDuration)));
-    p.set('speechText', safe.speechText != null ? String(safe.speechText) : DEFAULTS.speechText);
+    p.set('speechText', safe.speechText != null ? sanitizeSpeechText(safe.speechText) : DEFAULTS.speechText);
     p.set('speechDuration', String(parseNum(safe.speechDuration, DEFAULTS.speechDuration)));
     p.set('speechPosition', clampPosition(safe.speechPosition || DEFAULTS.speechPosition));
     p.set('speechOffsetX', String(clampSpeechOffset(parseNum(safe.speechOffsetX, DEFAULTS.speechOffsetX))));
@@ -1494,7 +1515,7 @@
     PUSH_OUT_LABELS: PUSH_OUT_LABELS,
     parseParams: parseParams,
     parseFromLocation: parseFromLocation,
-    parseSpeechTextFromHash: parseSpeechTextFromHash,
+    parseSpeechTextFromLocation: parseSpeechTextFromLocation,
     sanitizeConfigName: sanitizeConfigName,
     buildConfigMeta: buildConfigMeta,
     attachConfigMeta: attachConfigMeta,
@@ -2618,19 +2639,11 @@
     var parsedConfig = JSON.parse(CompanionConfig.buildConfigJson(settings || readForm()));
     var embeddedSettingsJson = JSON.stringify(parsedConfig && parsedConfig.settings ? parsedConfig.settings : {}, null, 2)
       .replace(/</g, '\\u003c');
-    var markerStart = '<!-- COMPANION_EMBEDDED_SETTINGS_START -->';
-    var markerEnd = '<!-- COMPANION_EMBEDDED_SETTINGS_END -->';
-    var embeddedScript =
-      markerStart + '\n' +
-      '<script id="companion-embedded-settings">\n' +
-      'window.__COMPANION_INITIAL_SETTINGS__ = ' + embeddedSettingsJson + ';\n' +
-      '</scr' + 'ipt>\n' +
-      markerEnd;
-    var blockPattern = /<!-- COMPANION_EMBEDDED_SETTINGS_START -->[\s\S]*?<!-- COMPANION_EMBEDDED_SETTINGS_END -->/;
-    if (blockPattern.test(templateText)) {
-      return templateText.replace(blockPattern, embeddedScript);
+    var embeddedJsonBlock = '__COMPANION_EMBEDDED_SETTINGS_JSON__';
+    if (templateText.indexOf(embeddedJsonBlock) >= 0) {
+      return templateText.replace(embeddedJsonBlock, embeddedSettingsJson);
     }
-    return templateText.replace(/<\/body>/i, embeddedScript + '\n  </body>');
+    throw new Error('output.html template is missing the embedded settings placeholder.');
   }
 
   function loadOutputTemplateText() {
