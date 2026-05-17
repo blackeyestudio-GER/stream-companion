@@ -2618,15 +2618,19 @@
     var parsedConfig = JSON.parse(CompanionConfig.buildConfigJson(settings || readForm()));
     var embeddedSettingsJson = JSON.stringify(parsedConfig && parsedConfig.settings ? parsedConfig.settings : {}, null, 2)
       .replace(/</g, '\\u003c');
+    var markerStart = '<!-- COMPANION_EMBEDDED_SETTINGS_START -->';
+    var markerEnd = '<!-- COMPANION_EMBEDDED_SETTINGS_END -->';
     var embeddedScript =
+      markerStart + '\n' +
       '<script id="companion-embedded-settings">\n' +
       'window.__COMPANION_INITIAL_SETTINGS__ = ' + embeddedSettingsJson + ';\n' +
-      '</script>';
-    var markerPattern = /<script id="companion-embedded-settings">[\s\S]*?<\/script>/;
-    if (markerPattern.test(templateText)) {
-      return templateText.replace(markerPattern, embeddedScript);
+      '</script>\n' +
+      markerEnd;
+    var blockPattern = /<!-- COMPANION_EMBEDDED_SETTINGS_START -->[\s\S]*?<!-- COMPANION_EMBEDDED_SETTINGS_END -->/;
+    if (blockPattern.test(templateText)) {
+      return templateText.replace(blockPattern, embeddedScript);
     }
-    return templateText.replace(/<script>/, embeddedScript + '\n    <script>');
+    return templateText.replace(/<\/body>/i, embeddedScript + '\n  </body>');
   }
 
   function loadOutputTemplateText() {
