@@ -582,7 +582,8 @@
                     <code class="rounded bg-zinc-950 px-1.5 py-0.5 font-mono text-xs text-sky-300/90">output.html</code>, and that is the file you should add to OBS.
                   </p>
                   <p class="mt-2">
-                    The output file reads its local <code class="rounded bg-zinc-950 px-1.5 py-0.5 font-mono text-xs text-sky-300/90">config.json</code> automatically. Dynamic speech still comes from
+                    The editor writes your saved settings into both <code class="rounded bg-zinc-950 px-1.5 py-0.5 font-mono text-xs text-sky-300/90">config.json</code> and
+                    <code class="rounded bg-zinc-950 px-1.5 py-0.5 font-mono text-xs text-sky-300/90">output.html</code>. Dynamic speech still comes from
                     <code class="rounded bg-zinc-950 px-1.5 py-0.5 font-mono text-xs text-sky-300/90">#say=…</code>
                     appended to the OBS URL by Streamer.bot.
                   </p>
@@ -2607,6 +2608,73 @@
     return saveBlobToSelectedFolder(filename, file);
   }
 
+  function readTextFromFileHandle(fileHandle) {
+    return fileHandle.getFile().then(function (file) {
+      return file.text();
+    });
+  }
+
+  function buildOutputHtmlText(settings, templateText) {
+    var parsedConfig = JSON.parse(CompanionConfig.buildConfigJson(settings || readForm()));
+    var embeddedSettingsJson = JSON.stringify(parsedConfig && parsedConfig.settings ? parsedConfig.settings : {}, null, 2)
+      .replace(/</g, '\\u003c');
+    var embeddedScript =
+      '<script id="companion-embedded-settings">\n' +
+      'window.__COMPANION_INITIAL_SETTINGS__ = ' + embeddedSettingsJson + ';\n' +
+      '</script>';
+    var markerPattern = /<script id="companion-embedded-settings">[\s\S]*?<\/script>/;
+    if (markerPattern.test(templateText)) {
+      return templateText.replace(markerPattern, embeddedScript);
+    }
+    return templateText.replace(/<script>/, embeddedScript + '\n    <script>');
+  }
+
+  function loadOutputTemplateText() {
+    if (!currentConfigFolderHandle) return Promise.reject(new Error('No config folder selected.'));
+    return currentConfigFolderHandle.getFileHandle('output.html').then(
+      function (fileHandle) {
+        return readTextFromFileHandle(fileHandle);
+      },
+      function () {
+        if (!currentConfigsRootHandle) throw new Error('Could not open output.html.');
+        return currentConfigsRootHandle.getDirectoryHandle('default').then(function (defaultDir) {
+          return defaultDir.getFileHandle('output.html').then(function (fileHandle) {
+            return readTextFromFileHandle(fileHandle);
+          });
+        });
+      }
+    );
+  }
+
+  function saveOutputHtmlToCurrentFolder(settings) {
+    if (!currentConfigFolderHandle) return Promise.resolve(false);
+    return loadOutputTemplateText().then(function (templateText) {
+      var outputText = buildOutputHtmlText(settings || readForm(), templateText);
+      return currentConfigFolderHandle.getFileHandle('output.html', { create: true }).then(function (fileHandle) {
+        return fileHandle.createWritable().then(function (writable) {
+          return writable.write(new Blob([outputText], { type: 'text/html;charset=utf-8' })).then(function () {
+            return writable.close();
+          });
+        });
+      });
+    });
+  }
+
+  function saveCurrentConfigArtifacts(settings) {
+    if (!currentConfigFolderHandle) return Promise.resolve(false);
+    var currentSettings = settings || readForm();
+    return Promise.all([
+      saveConfigJsonToCurrentFolder(currentSettings),
+      saveOutputHtmlToCurrentFolder(currentSettings),
+    ]).then(function () {
+      setAutoSaveState('Saved', 'success', 'Changes were written to ' + currentConfigFolderHandle.name + '/config.json and output.html.');
+      return true;
+    }).catch(function (err) {
+      setAutoSaveState('Save error', 'error', err && err.message ? err.message : 'Could not write config files.');
+      throw err;
+    });
+  }
+
   function saveConfigJsonToCurrentFolder(settings) {
     if (!currentConfigFolderHandle) return Promise.resolve(false);
     var jsonText = CompanionConfig.buildConfigJson(settings || readForm());
@@ -2616,12 +2684,6 @@
           return writable.close();
         });
       });
-    }).then(function () {
-      setAutoSaveState('Saved', 'success', 'Changes were written to ' + currentConfigFolderHandle.name + '/config.json.');
-      return true;
-    }).catch(function (err) {
-      setAutoSaveState('Save error', 'error', err && err.message ? err.message : 'Could not write config.json.');
-      throw err;
     });
   }
 
@@ -2638,17 +2700,11 @@
     setAutoSaveState('Saving...', 'saving', 'Writing changes into the current config folder.');
     autoSaveTimer = window.setTimeout(function () {
       autoSaveTimer = 0;
-      saveConfigJsonToCurrentFolder(readForm()).catch(function (err) {
+      saveCurrentConfigArtifacts(readForm()).catch(function (err) {
         if (seq !== autoSaveSeq) return;
-        setStatus(err && err.message ? err.message : 'Could not save config.json.', 'error');
+        setStatus(err && err.message ? err.message : 'Could not save config files.', 'error');
       });
     }, options.immediate ? 0 : 300);
-  }
-
-  function readJsonFromFileHandle(fileHandle) {
-    return fileHandle.getFile().then(function (file) {
-      return file.text();
-    });
   }
 
   function copyFileHandle(sourceDir, filename, targetDir) {
@@ -2669,7 +2725,7 @@
     if (!currentConfigsRootHandle) return Promise.reject(new Error('No project folder selected.'));
     return currentConfigsRootHandle.getDirectoryHandle(configName).then(function (dirHandle) {
       return dirHandle.getFileHandle(CONFIG_FILENAME_JSON).then(function (fileHandle) {
-        return readJsonFromFileHandle(fileHandle).then(function (text) {
+        return readTextFromFileHandle(fileHandle).then(function (text) {
           var parsed = CompanionConfig.parseConfigText(text);
           if (!parsed) throw new Error('Could not read configuration.');
           currentConfigFolderHandle = dirHandle;
@@ -2692,10 +2748,13 @@
         CompanionConfig.setStoredEditorConfigName(configName);
         setBuiltUrlValue(CompanionConfig.buildPlayUrl(readForm()));
         setStatus('Loaded named config "' + configName + '".', 'success');
-        setAutoSaveState('Saved', 'success', 'Editing ' + configName + '/config.json.');
+        setAutoSaveState('Saved', 'success', 'Editing ' + configName + '/config.json and output.html.');
         closeStartupDialog();
         var form = $('config-form');
         if (form) form.dispatchEvent(new Event('input', { bubbles: true }));
+        saveOutputHtmlToCurrentFolder(settings).catch(function (err) {
+          setStatus(err && err.message ? err.message : 'Could not update output.html.', 'error');
+        });
         return settings;
       },
       function (err) {

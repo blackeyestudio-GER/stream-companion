@@ -524,7 +524,8 @@
                     <code class="rounded bg-zinc-950 px-1.5 py-0.5 font-mono text-xs text-sky-300/90">output.html</code>, and that is the file you should add to OBS.
                   </p>
                   <p class="mt-2">
-                    The output file reads its local <code class="rounded bg-zinc-950 px-1.5 py-0.5 font-mono text-xs text-sky-300/90">config.json</code> automatically. Dynamic speech still comes from
+                    The editor writes your saved settings into both <code class="rounded bg-zinc-950 px-1.5 py-0.5 font-mono text-xs text-sky-300/90">config.json</code> and
+                    <code class="rounded bg-zinc-950 px-1.5 py-0.5 font-mono text-xs text-sky-300/90">output.html</code>. Dynamic speech still comes from
                     <code class="rounded bg-zinc-950 px-1.5 py-0.5 font-mono text-xs text-sky-300/90">#say=…</code>
                     appended to the OBS URL by Streamer.bot.
                   </p>
@@ -723,6 +724,44 @@
         </div>
       </div>
     </dialog>
+    <script id="companion-embedded-settings">
+window.__COMPANION_INITIAL_SETTINGS__ = {
+  "mirroring": false,
+  "scale": 1,
+  "idleImageRotateX": 0,
+  "idleImageRotateY": 0,
+  "idleImageRotateZ": 0,
+  "idleImageShadowOpacity": 0.35,
+  "idleImageShadowDepth": 14,
+  "talkImageRotateX": 0,
+  "talkImageRotateY": 0,
+  "talkImageRotateZ": 0,
+  "talkImageShadowOpacity": 0.35,
+  "talkImageShadowDepth": 14,
+  "animation": "float",
+  "animationDuration": 3,
+  "speechText": "Hey everyone thanks so much for hanging out with us",
+  "speechDuration": 4,
+  "speechPosition": "bottom",
+  "speechOffsetX": 0,
+  "speechOffsetY": 0,
+  "fontSize": 16,
+  "speechFontFamily": "Press Start 2P",
+  "textColor": "#1a1a2e",
+  "bubbleColor": "#ffffff",
+  "bubbleOpacity": 0.95,
+  "speechBubbleMinWidth": 300,
+  "autoHideSpeech": true,
+  "useTalkImageForTrigger": true,
+  "triggerIn": "right",
+  "triggerOut": "right",
+  "triggerDuration": 0.5,
+  "triggerOutDuration": 0.5,
+  "speakAnimation": "wobble",
+  "nonspeakAnimation": "grunt",
+  "speakSound": "none"
+};
+    </script>
     <script>
 /**
  * Companion Overlay — eine Seite: Config + Play. Module in einer Datei (GitHub Pages).
@@ -3191,7 +3230,11 @@
   function getInitialSettings() {
     var boot = window.__COMPANION_INITIAL_SETTINGS__;
     if (boot && typeof boot === 'object') {
-      return Promise.resolve(CompanionConfig.attachConfigMeta(Object.assign({}, CompanionConfig.DEFAULTS, boot), currentConfigMeta));
+      return Promise.resolve(
+        mergeSpeechFromHash(
+          CompanionConfig.attachConfigMeta(Object.assign({}, CompanionConfig.DEFAULTS, boot), currentConfigMeta)
+        )
+      );
     }
     return CompanionConfig.loadNamedConfig(guessConfigNameFromOutputPath()).catch(function () {
       return CompanionConfig.attachConfigMeta(
